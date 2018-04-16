@@ -5,28 +5,47 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:tb="http://www.hardcodet.net/taskbar"
         xmlns:local="clr-namespace:PRTrackerUI"
+        DataContext="{Binding Main, Source={StaticResource Locator}}"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
+        Visibility="Hidden"
+        Title="MainWindow" Height="400" Width="400"
         Loaded="WindowLoaded">
     <Grid>
-        <tb:TaskbarIcon
-            IconSource="/Icons/Error.ico"
-            ToolTipText="hello world">
+        <tb:TaskbarIcon IconSource="/Images/icon_x-men.ico" ToolTipText="PR Tracker">
 
             <tb:TaskbarIcon.TrayPopup>
-                <Border
-                  Background="White"
-                  BorderBrush="Orange"
-                  BorderThickness="2"
-                  CornerRadius="4"
-                  Width="160"
-                  Height="40">
-                    <Button
-                        Content="Click Me!"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center" />
+                <Border Background="White" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Width="400" Height="400">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Pull Requests" Grid.Row="0" />
+
+                        <Button Grid.Row="1" Content="Load completed" Command="{Binding LoadCommand}" IsEnabled="{Binding IsLoadEnabled}"/>
+
+                        <DataGrid Grid.Row="2" ItemsSource="{Binding PullRequests}"  CanUserAddRows="False" IsReadOnly="True" AutoGenerateColumns="False" VerticalScrollBarVisibility="Auto">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Ellipse Height="44" Width="44">
+                                                <Ellipse.Fill>
+                                                    <ImageBrush ImageSource="{Binding AvatarImage}"/>
+                                                </Ellipse.Fill>
+                                            </Ellipse>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Binding="{Binding Title}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
                 </Border>
             </tb:TaskbarIcon.TrayPopup>
+
         </tb:TaskbarIcon>
     </Grid>
 </Window>

@@ -9,12 +9,11 @@ namespace PRTrackerUI
     {
         public MainWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
-
         }
     }
 }
