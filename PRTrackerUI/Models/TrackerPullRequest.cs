@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using GalaSoft.MvvmLight;
@@ -29,33 +31,29 @@ namespace PRTrackerUI.Models
             this.avatarPlaceholder.Freeze();
         }
 
-        public string Title { get => this.gitPullRequest.Title; }
+        public TrackerIdentity CreatedBy { get => new TrackerIdentity(this.gitPullRequest.CreatedBy, this.avatarDownloadAsyncCache, this.avatarCache, this.avatarPlaceholder); }
 
-        public BitmapImage AvatarImage
+        public int ID { get => this.gitPullRequest.PullRequestId; }
+
+        public IEnumerable<TrackerIdentity> Reviewers { get => this.gitPullRequest.Reviewers.Select((reviewer) => new TrackerIdentity(reviewer, this.avatarDownloadAsyncCache, this.avatarCache, this.avatarPlaceholder)); }
+
+        public string TargetBranchName
         {
             get
             {
-                string imageUrl = this.gitPullRequest.CreatedBy.ImageUrl;
+                const string refsPrefix = "refs/heads/";
 
-                if (this.avatarCache.ContainsKey(imageUrl))
+                string target = this.gitPullRequest.TargetRefName;
+                if (target.StartsWith(refsPrefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    return this.avatarCache[imageUrl];
+                    target = target.Remove(0, refsPrefix.Length);
                 }
-                else
-                {
-                    Task.Run(async () =>
-                    {
-                        // It's fine if this returns false because the key already exists, as we'll just send a property change notification to read reload the value from the cache
-                        BitmapImage avatarImage = await this.avatarDownloadAsyncCache[imageUrl];
-                        avatarImage.Freeze();
-                        this.avatarCache.TryAdd(imageUrl, avatarImage);
-                        this.RaisePropertyChanged();
-                    });
 
-                    return this.avatarPlaceholder;
-                }
+                return target;
             }
         }
+
+        public string Title { get => this.gitPullRequest.Title; }
 
         private async Task<BitmapImage> DownloadAvatarImageAsync(string url)
         {
@@ -69,7 +67,7 @@ namespace PRTrackerUI.Models
                         MemoryStream memoryStream = new MemoryStream();
                         BitmapImage avatarImage = new BitmapImage();
 
-                        const int BytesToRead = 1000;
+                        const int BytesToRead = 8192;
 
                         byte[] bytebuffer = new byte[BytesToRead];
                         int bytesRead = reader.Read(bytebuffer, 0, BytesToRead);

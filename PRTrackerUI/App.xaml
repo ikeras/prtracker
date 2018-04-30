@@ -9,6 +9,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <vm:ViewModelLocator x:Key="Locator" d:IsDataSource="True" xmlns:vm="clr-namespace:PRTrackerUI.ViewModel" />
+            <FontFamily x:Key="Bowtie">pack://application:,,,/Fonts/#Bowtie</FontFamily>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

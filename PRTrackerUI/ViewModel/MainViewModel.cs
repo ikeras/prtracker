@@ -7,6 +7,7 @@ using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Ioc;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using PRServicesClient.Services;
+using PRTrackerUI.Common;
 using PRTrackerUI.Models;
 
 namespace PRTrackerUI.ViewModel
@@ -15,11 +16,18 @@ namespace PRTrackerUI.ViewModel
     {
         private ObservableCollection<TrackerPullRequest> pullRequests;
         private bool loadEnabled;
+        private string iconSource = IconSources.Default;
 
         public MainViewModel()
         {
             this.IsLoadEnabled = true;
             this.LoadCommand = new RelayCommand(this.OnLoadCommand);
+        }
+
+        public string IconSource
+        {
+            get => this.iconSource;
+            set => this.Set(nameof(this.IconSource), ref this.iconSource, value);
         }
 
         public RelayCommand LoadCommand { get; }
@@ -57,6 +65,7 @@ namespace PRTrackerUI.ViewModel
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     this.PullRequests = new ObservableCollection<TrackerPullRequest>(trackerPullRequests);
+                    this.IconSource = trackerPullRequests.Count > 0 ? IconSources.Action : IconSources.Default;
                     this.IsLoadEnabled = true;
                 });
             });

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace PRTrackerUI.Common
 {
-    internal class AsyncCache<TKey, TValue>
+    public class AsyncCache<TKey, TValue>
     {
         private readonly Func<TKey, Task<TValue>> valueFactory;
         private readonly ConcurrentDictionary<TKey, Lazy<Task<TValue>>> map;

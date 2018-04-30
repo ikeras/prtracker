@@ -57,6 +57,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Common\AsyncCache.cs" />
+    <Compile Include="Common\IconSources.cs" />
+    <Compile Include="Models\TrackerIdentity.cs" />
     <Compile Include="Models\TrackerPullRequest.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
@@ -91,6 +93,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <Resource Include="Fonts\Bowtie.ttf" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -124,9 +127,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\icon_x-men.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\PRServicesClient\PRServicesClient.csproj">
       <Project>{C222350F-3620-454F-AEFD-1EF33C0756E4}</Project>
       <Name>PRServicesClient</Name>
@@ -134,6 +134,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\placeholder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\dragon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\dragonAction.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

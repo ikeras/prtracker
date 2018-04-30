@@ -8,13 +8,12 @@
         DataContext="{Binding Main, Source={StaticResource Locator}}"
         mc:Ignorable="d"
         Visibility="Hidden"
-        Title="MainWindow" Height="400" Width="400"
-        Loaded="WindowLoaded">
+        Title="MainWindow" Height="400" Width="800">
     <Grid>
-        <tb:TaskbarIcon IconSource="/Images/icon_x-men.ico" ToolTipText="PR Tracker">
+        <tb:TaskbarIcon IconSource="{Binding IconSource}" ToolTipText="PR Tracker">
 
             <tb:TaskbarIcon.TrayPopup>
-                <Border Background="White" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Width="400" Height="400">
+                <Border Background="White" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Width="800" Height="400">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -26,20 +25,64 @@
 
                         <Button Grid.Row="1" Content="Load completed" Command="{Binding LoadCommand}" IsEnabled="{Binding IsLoadEnabled}"/>
 
-                        <DataGrid Grid.Row="2" ItemsSource="{Binding PullRequests}"  CanUserAddRows="False" IsReadOnly="True" AutoGenerateColumns="False" VerticalScrollBarVisibility="Auto">
+                        <DataGrid Grid.Row="2" ItemsSource="{Binding PullRequests}"  CanUserAddRows="False" IsReadOnly="True" AutoGenerateColumns="False" VerticalScrollBarVisibility="Auto"  GridLinesVisibility="None">
                             <DataGrid.Columns>
                                 <DataGridTemplateColumn>
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Ellipse Height="44" Width="44">
+                                            <Ellipse Height="40" Width="40">
                                                 <Ellipse.Fill>
-                                                    <ImageBrush ImageSource="{Binding AvatarImage}"/>
+                                                    <ImageBrush ImageSource="{Binding CreatedBy.AvatarImage}"/>
                                                 </Ellipse.Fill>
                                             </Ellipse>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTextColumn Binding="{Binding Title}" />
+                                <DataGridTemplateColumn>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Text="{Binding Title}" Grid.Row="0" />
+                                                <TextBlock Grid.Row="1">
+                                                    <Run Text="{Binding CreatedBy.DisplayName, Mode=OneWay}" /> requested #<Run Text="{Binding ID, Mode=OneWay}" /> into <Run FontFamily="{StaticResource Bowtie}" Text="&#xea35;" /><Run Text="{Binding TargetBranchName, Mode=OneWay}" />
+                                                </TextBlock>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <ItemsControl Grid.Row="0" ItemsSource="{Binding Reviewers}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Orientation="Horizontal" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Ellipse Height="18" Width="18">
+                                                                <Ellipse.Fill>
+                                                                    <ImageBrush ImageSource="{Binding AvatarImage}"/>
+                                                                </Ellipse.Fill>
+                                                            </Ellipse>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                
+                                            </Grid>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
