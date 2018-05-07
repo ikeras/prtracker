@@ -59,6 +59,7 @@
     <Compile Include="Common\AsyncCache.cs" />
     <Compile Include="Common\IconSources.cs" />
     <Compile Include="Models\TrackerIdentity.cs" />
+    <Compile Include="Models\TrackerIdentityWithVote.cs" />
     <Compile Include="Models\TrackerPullRequest.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />

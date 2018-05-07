@@ -33,9 +33,49 @@ namespace PRTrackerUI.Models
 
         public TrackerIdentity CreatedBy { get => new TrackerIdentity(this.gitPullRequest.CreatedBy, this.avatarDownloadAsyncCache, this.avatarCache, this.avatarPlaceholder); }
 
+        public string FormattedDate
+        {
+            get
+            {
+                DateTime changedStateDate = this.gitPullRequest.Status == PullRequestStatus.Completed || this.gitPullRequest.Status == PullRequestStatus.Abandoned ? this.gitPullRequest.ClosedDate : this.gitPullRequest.CreationDate;
+
+                TimeSpan timeSpan = DateTime.Now - changedStateDate;
+                double hoursAgo = Math.Round(timeSpan.TotalHours);
+
+                return hoursAgo < 24 ? $"{Math.Abs(hoursAgo)} hours ago" : changedStateDate.ToShortDateString();
+            }
+        }
+
         public int ID { get => this.gitPullRequest.PullRequestId; }
 
-        public IEnumerable<TrackerIdentity> Reviewers { get => this.gitPullRequest.Reviewers.Select((reviewer) => new TrackerIdentity(reviewer, this.avatarDownloadAsyncCache, this.avatarCache, this.avatarPlaceholder)); }
+        public IEnumerable<TrackerIdentityWithVote> Reviewers { get => this.gitPullRequest.Reviewers.Select((reviewer) => new TrackerIdentityWithVote(reviewer, this.avatarDownloadAsyncCache, this.avatarCache, this.avatarPlaceholder)); }
+
+        public string Status
+        {
+            get
+            {
+                string status = string.Empty;
+
+                switch (this.gitPullRequest.Status)
+                {
+                    case PullRequestStatus.NotSet:
+                        break;
+                    case PullRequestStatus.Active:
+                        status = "Active";
+                        break;
+                    case PullRequestStatus.Abandoned:
+                        status = "Abandoned";
+                        break;
+                    case PullRequestStatus.Completed:
+                        status = "Completed";
+                        break;
+                    case PullRequestStatus.All:
+                        break;
+                }
+
+                return status;
+            }
+        }
 
         public string TargetBranchName
         {

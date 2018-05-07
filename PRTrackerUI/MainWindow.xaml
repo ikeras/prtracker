@@ -9,6 +9,22 @@
         mc:Ignorable="d"
         Visibility="Hidden"
         Title="MainWindow" Height="400" Width="800">
+
+    <Window.Resources>
+        <Style x:Key="GridMouseOverKey" TargetType="{x:Type Grid}">
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="False">
+                    <Setter Property="Background" Value="Transparent" />
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="AliceBlue" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverterKey"/>
+    </Window.Resources>
+
     <Grid>
         <tb:TaskbarIcon IconSource="{Binding IconSource}" ToolTipText="PR Tracker">
 
@@ -25,23 +41,24 @@
 
                         <Button Grid.Row="1" Content="Load completed" Command="{Binding LoadCommand}" IsEnabled="{Binding IsLoadEnabled}"/>
 
-                        <DataGrid Grid.Row="2" ItemsSource="{Binding PullRequests}"  CanUserAddRows="False" IsReadOnly="True" AutoGenerateColumns="False" VerticalScrollBarVisibility="Auto"  GridLinesVisibility="None">
-                            <DataGrid.Columns>
-                                <DataGridTemplateColumn>
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Ellipse Height="40" Width="40">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="2">
+                            <ItemsControl ItemsSource="{Binding PullRequests}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Style="{StaticResource GridMouseOverKey}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Ellipse Height="40" Width="40" Grid.Column="0">
                                                 <Ellipse.Fill>
                                                     <ImageBrush ImageSource="{Binding CreatedBy.AvatarImage}"/>
                                                 </Ellipse.Fill>
                                             </Ellipse>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTemplateColumn>
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Grid>
+
+                                            <Grid Grid.Column="1">
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
                                                     <RowDefinition Height="Auto" />
@@ -51,18 +68,13 @@
                                                     <Run Text="{Binding CreatedBy.DisplayName, Mode=OneWay}" /> requested #<Run Text="{Binding ID, Mode=OneWay}" /> into <Run FontFamily="{StaticResource Bowtie}" Text="&#xea35;" /><Run Text="{Binding TargetBranchName, Mode=OneWay}" />
                                                 </TextBlock>
                                             </Grid>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTemplateColumn>
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Grid>
+
+                                            <Grid Grid.Column="2">
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
                                                     <RowDefinition Height="Auto" />
                                                 </Grid.RowDefinitions>
-                                                <ItemsControl Grid.Row="0" ItemsSource="{Binding Reviewers}">
+                                                <ItemsControl Grid.Row="0" ItemsSource="{Binding Reviewers}" HorizontalAlignment="Right">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <StackPanel Orientation="Horizontal" />
@@ -70,21 +82,28 @@
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Ellipse Height="18" Width="18">
-                                                                <Ellipse.Fill>
-                                                                    <ImageBrush ImageSource="{Binding AvatarImage}"/>
-                                                                </Ellipse.Fill>
-                                                            </Ellipse>
+                                                            <Canvas Height="24" Width="24">
+                                                                <Ellipse Height="18" Width="18">
+                                                                    <Ellipse.Fill>
+                                                                        <ImageBrush ImageSource="{Binding AvatarImage}"/>
+                                                                    </Ellipse.Fill>
+                                                                </Ellipse>
+                                                                <TextBlock Canvas.Top="10" Canvas.Left="10" Visibility="{Binding IsOverlayVisible, Converter={StaticResource BoolToVisibilityConverterKey}}">
+                                                                    <Run FontFamily="{StaticResource Bowtie}" Foreground="{Binding Brush}" Text="{Binding OverlayText, Mode=OneWay}" />
+                                                                </TextBlock>
+                                                            </Canvas>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
-                                                
+                                                <TextBlock Grid.Row="1">
+                                                    <Run Text="{Binding Status, Mode=OneWay}" /> <Run Text="{Binding FormattedDate, Mode=OneWay}" />
+                                                </TextBlock>
                                             </Grid>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </Grid>
                 </Border>
             </tb:TaskbarIcon.TrayPopup>
