@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.Services.WebApi;
 
 namespace PRServicesClient.Services
 {
-    internal class ClientContext
+    public class ClientContext
     {
         private static readonly string AccountUrlPattern = "https://{0}.visualstudio.com";
 

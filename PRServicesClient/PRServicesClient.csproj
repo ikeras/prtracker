@@ -96,6 +96,7 @@
     <Compile Include="Common\HttpHeaders.cs" />
     <Compile Include="Services\ClientContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\ConnectionService.cs" />
     <Compile Include="Services\IPullRequestServices.cs" />
     <Compile Include="Services\PullRequestServices.cs" />
     <Compile Include="Services\IConnectionService.cs" />

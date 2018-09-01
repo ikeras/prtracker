@@ -9,6 +9,8 @@ namespace PRServicesClient.Services
     {
         Task<Stream> DownloadAvatarAsync(string url);
 
-        Task<List<GitPullRequest>> GetPullRequestsAsync(string project, string repoId, PullRequestStatus status);
+        Task<List<GitPullRequest>> GetPullRequestsAsync(PullRequestStatus status);
+
+        Task<string> GetUrlForBranchRef(string repoId);
     }
 }

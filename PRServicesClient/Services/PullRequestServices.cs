@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
@@ -11,9 +12,20 @@ using static System.FormattableString;
 
 namespace PRServicesClient.Services
 {
-    public class PullRequestServices : IConnectionService, IPullRequestServices
+    public class PullRequestServices : IPullRequestServices
     {
-        private ClientContext clientContext;
+        private readonly ClientContext clientContext;
+        private readonly GitHttpClient client;
+        private readonly string project;
+        private readonly GitRepository repo;
+
+        public PullRequestServices(ClientContext clientContext, GitHttpClient client, string project, GitRepository repo)
+        {
+            this.clientContext = clientContext;
+            this.client = client;
+            this.project = project;
+            this.repo = repo;
+        }
 
         public async Task<Stream> DownloadAvatarAsync(string url)
         {
@@ -34,22 +46,18 @@ namespace PRServicesClient.Services
             return responseStream;
         }
 
-        public async Task<List<GitPullRequest>> GetPullRequestsAsync(string project, string repoId, PullRequestStatus status)
+        public async Task<List<GitPullRequest>> GetPullRequestsAsync(PullRequestStatus status)
         {
-            VssConnection connection = this.clientContext.Connection;
-            GitHttpClient gitClient = connection.GetClient<GitHttpClient>();
-            GitRepository repo = await gitClient.GetRepositoryAsync(project, repoId);
-
-            List<GitPullRequest> pullRequests = await gitClient.GetPullRequestsByProjectAsync(project, new GitPullRequestSearchCriteria() { RepositoryId = repo.Id, Status = status });
+            List<GitPullRequest> pullRequests = await this.client.GetPullRequestsByProjectAsync(this.project, new GitPullRequestSearchCriteria() { RepositoryId = this.repo.Id, Status = status });
 
             return pullRequests;
         }
 
-        public IPullRequestServices InitializePullRequestServices(string accountName, string personalAccessToken)
+        public async Task<string> GetUrlForBranchRef(string refName)
         {
-            this.clientContext = new ClientContext(accountName, personalAccessToken);
+            List<GitRef> gitRefs = await this.client.GetBranchRefsAsync(this.repo.Id);
 
-            return this;
+            return gitRefs.Where((gitRef) => gitRef.Name == refName).FirstOrDefault()?.Url;
         }
 
         private static string FormatBasicAuthHeader(NetworkCredential credential)

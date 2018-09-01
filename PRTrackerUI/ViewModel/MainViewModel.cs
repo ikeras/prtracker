@@ -52,15 +52,12 @@ namespace PRTrackerUI.ViewModel
             {
                 IConnectionService connectionService = SimpleIoc.Default.GetInstance<IConnectionService>();
 
-                IPullRequestServices prServices = connectionService.InitializePullRequestServices("devdiv", "j7sjpmvftovr7ac5mhslbvcpeopniazsz7e6zodzk2jbanpgjojq");
+                IPullRequestServices prServices = await connectionService.InitializePullRequestServicesAsync("devdiv", "j7sjpmvftovr7ac5mhslbvcpeopniazsz7e6zodzk2jbanpgjojq", "devdiv", "VSCloudKernel");
 
-                List<GitPullRequest> prs = await prServices.GetPullRequestsAsync("devdiv", "VSCloudKernel", PullRequestStatus.Completed);
+                List<GitPullRequest> prs = await prServices.GetPullRequestsAsync(PullRequestStatus.Completed);
                 List<TrackerPullRequest> trackerPullRequests = new List<TrackerPullRequest>();
 
-                foreach (GitPullRequest pullRequest in prs)
-                {
-                    trackerPullRequests.Add(new TrackerPullRequest(pullRequest, prServices));
-                }
+                prs.ForEach((pullRequest) => trackerPullRequests.Add(new TrackerPullRequest(pullRequest, prServices)));
 
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {

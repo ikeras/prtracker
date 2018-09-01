@@ -14,7 +14,7 @@ namespace PRTrackerUI.ViewModel
         {
             ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
 
-            SimpleIoc.Default.Register<IConnectionService, PullRequestServices>();
+            SimpleIoc.Default.Register<IConnectionService, ConnectionService>();
             SimpleIoc.Default.Register<MainViewModel>();
         }
 
