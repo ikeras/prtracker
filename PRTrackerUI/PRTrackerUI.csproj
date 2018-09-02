@@ -58,9 +58,11 @@
     </ApplicationDefinition>
     <Compile Include="Common\AsyncCache.cs" />
     <Compile Include="Common\IconSources.cs" />
+    <Compile Include="Models\TrackerConfig.cs" />
     <Compile Include="Models\TrackerIdentity.cs" />
     <Compile Include="Models\TrackerIdentityWithVote.cs" />
     <Compile Include="Models\TrackerPullRequest.cs" />
+    <Compile Include="Models\TrackerQuery.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Page Include="MainWindow.xaml">
@@ -95,7 +97,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <Resource Include="Fonts\Bowtie.ttf" />
-    <None Include="config.json" />
+    <None Include="config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -111,6 +115,15 @@
     </PackageReference>
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf">
       <Version>1.0.8</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration">
+      <Version>2.1.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder">
+      <Version>2.1.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json">
+      <Version>2.1.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.TeamFoundationServer.Client">
       <Version>15.112.1</Version>

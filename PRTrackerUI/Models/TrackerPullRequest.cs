@@ -17,16 +17,14 @@ namespace PRTrackerUI.Models
     {
         private readonly AsyncCache<string, BitmapImage> avatarDownloadAsyncCache;
         private readonly ConcurrentDictionary<string, BitmapImage> avatarCache;
-        private readonly IPullRequestServices pullRequestServices;
         private readonly GitPullRequest gitPullRequest;
         private readonly BitmapImage avatarPlaceholder;
 
-        public TrackerPullRequest(GitPullRequest gitPullRequest, IPullRequestServices pullRequestServices)
+        public TrackerPullRequest(GitPullRequest gitPullRequest, ConcurrentDictionary<string, BitmapImage> avatarCache, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache)
         {
             this.gitPullRequest = gitPullRequest;
-            this.pullRequestServices = pullRequestServices;
-            this.avatarCache = new ConcurrentDictionary<string, BitmapImage>();
-            this.avatarDownloadAsyncCache = new AsyncCache<string, BitmapImage>(this.DownloadAvatarImageAsync);
+            this.avatarCache = avatarCache;
+            this.avatarDownloadAsyncCache = avatarDownloadAsyncCache;
             this.avatarPlaceholder = new BitmapImage(new Uri("pack://application:,,,/Images/placeholder.png", UriKind.Absolute));
             this.avatarPlaceholder.Freeze();
         }
@@ -96,45 +94,5 @@ namespace PRTrackerUI.Models
         public string Title { get => this.gitPullRequest.Title; }
 
         public string Url { get => this.gitPullRequest.Url; }
-
-        private async Task<BitmapImage> DownloadAvatarImageAsync(string url)
-        {
-            try
-            {
-                Stream avatarStream = await this.pullRequestServices.DownloadAvatarAsync(url);
-
-                if (avatarStream != null)
-                {
-                    BinaryReader reader = new BinaryReader(avatarStream);
-                    MemoryStream memoryStream = new MemoryStream();
-                    BitmapImage avatarImage = new BitmapImage();
-
-                    const int BytesToRead = 8192;
-
-                    byte[] bytebuffer = new byte[BytesToRead];
-                    int bytesRead = reader.Read(bytebuffer, 0, BytesToRead);
-
-                    while (bytesRead > 0)
-                    {
-                        memoryStream.Write(bytebuffer, 0, bytesRead);
-                        bytesRead = reader.Read(bytebuffer, 0, BytesToRead);
-                    }
-
-                    avatarImage.BeginInit();
-                    memoryStream.Seek(0, SeekOrigin.Begin);
-
-                    avatarImage.StreamSource = memoryStream;
-                    avatarImage.EndInit();
-
-                    return avatarImage;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.Fail($"Exception {ex}");
-            }
-
-            return null;
-        }
     }
 }
