@@ -27,7 +27,8 @@ PRTracker expects a config.json to be placed alongside the executable. This conf
       "personalAccessToken": "<VSTS PAT with access to this account, project and repo>",
       "project": "<VSTS Project>",
       "repoId": "<VSTS repo name>",
-      "reviewTool":  "<optional property that specifes the name of a tool specified in reviewTools, useful to override the defaultReviewTool>"
+      "reviewTool":  "<optional property that specifes the name of a tool specified in reviewTools, useful to override the defaultReviewTool>",
+      "uniqueUserId": <VSTS unique user ID, usually an email - this will cause the tool to omit any PRs that have been approved by this user>
     }
   ]
 }

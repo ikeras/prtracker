@@ -46,9 +46,20 @@ namespace PRServicesClient.Services
             return responseStream;
         }
 
-        public async Task<List<GitPullRequest>> GetPullRequestsAsync(PullRequestStatus status)
+        public async Task<IEnumerable<GitPullRequest>> GetPullRequestsAsync(PullRequestStatus status, string userUniqueId = null)
         {
-            List<GitPullRequest> pullRequests = await this.client.GetPullRequestsByProjectAsync(this.project, new GitPullRequestSearchCriteria() { RepositoryId = this.repo.Id, Status = status });
+            IEnumerable<GitPullRequest> pullRequests = await this.client.GetPullRequestsByProjectAsync(this.project, new GitPullRequestSearchCriteria() { RepositoryId = this.repo.Id, Status = status });
+
+            if (!string.IsNullOrEmpty(userUniqueId))
+            {
+                pullRequests = pullRequests.Where((pullRequest) =>
+                {
+                    IdentityRefWithVote identityRefWithVote = pullRequest.Reviewers.FirstOrDefault((identity) => identity.UniqueName == userUniqueId);
+
+                    // Want to include anything that the user hasn't voted for, or where they have voted with waiting or rejected
+                    return identityRefWithVote == null || identityRefWithVote.Vote <= 0;
+                });
+            }
 
             return pullRequests;
         }

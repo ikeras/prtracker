@@ -11,5 +11,7 @@
         public string RepoId { get; set; }
 
         public string ReviewTool { get; set; }
+
+        public string UniqueUserId { get; set; }
     }
 }

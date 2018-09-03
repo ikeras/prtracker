@@ -143,9 +143,13 @@ namespace PRTrackerUI.ViewModel
                 {
                     IPullRequestServices prServices = await connectionService.InitializePullRequestServicesAsync(query.AccountName, query.PersonalAccessToken, query.Project, query.RepoId);
 
-                    List<GitPullRequest> prs = await prServices.GetPullRequestsAsync(PullRequestStatus.Completed);
+                    IEnumerable<GitPullRequest> prs = await prServices.GetPullRequestsAsync(PullRequestStatus.Active, query.UniqueUserId);
                     AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(prServices));
-                    prs.ForEach((pullRequest) => trackerPullRequests.Add(new PullRequestViewModel(pullRequest, avatarCache, asyncCache, query)));
+
+                    foreach (GitPullRequest pullRequest in prs)
+                    {
+                        trackerPullRequests.Add(new PullRequestViewModel(pullRequest, avatarCache, asyncCache, query));
+                    }
                 }
 
                 await Application.Current.Dispatcher.InvokeAsync(() =>
