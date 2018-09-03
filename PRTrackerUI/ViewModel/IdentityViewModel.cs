@@ -11,15 +11,13 @@ namespace PRTrackerUI.ViewModel
     {
         private readonly AsyncCache<string, BitmapImage> avatarDownloadAsyncCache;
         private readonly ConcurrentDictionary<string, BitmapImage> avatarCache;
-        private readonly BitmapImage avatarPlaceholder;
         private readonly IdentityRef identityRef;
 
-        public IdentityViewModel(IdentityRef identityRef, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, ConcurrentDictionary<string, BitmapImage> avatarCache, BitmapImage avatarPlaceholder)
+        public IdentityViewModel(IdentityRef identityRef, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, ConcurrentDictionary<string, BitmapImage> avatarCache)
         {
             this.identityRef = identityRef;
             this.avatarDownloadAsyncCache = avatarDownloadAsyncCache;
             this.avatarCache = avatarCache;
-            this.avatarPlaceholder = avatarPlaceholder;
         }
 
         public BitmapImage AvatarImage
@@ -44,7 +42,7 @@ namespace PRTrackerUI.ViewModel
                         this.RaisePropertyChanged();
                     });
 
-                    return this.avatarPlaceholder;
+                    return null;
                 }
             }
         }

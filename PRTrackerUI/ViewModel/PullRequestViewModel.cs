@@ -15,20 +15,17 @@ namespace PRTrackerUI.ViewModel
         private readonly AsyncCache<string, BitmapImage> avatarDownloadAsyncCache;
         private readonly ConcurrentDictionary<string, BitmapImage> avatarCache;
         private readonly GitPullRequest gitPullRequest;
-        private readonly BitmapImage avatarPlaceholder;
 
         public PullRequestViewModel(GitPullRequest gitPullRequest, ConcurrentDictionary<string, BitmapImage> avatarCache, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache)
         {
             this.gitPullRequest = gitPullRequest;
             this.avatarCache = avatarCache;
             this.avatarDownloadAsyncCache = avatarDownloadAsyncCache;
-            this.avatarPlaceholder = new BitmapImage(new Uri("pack://application:,,,/Images/placeholder.png", UriKind.Absolute));
-            this.avatarPlaceholder.Freeze();
         }
 
         public RelayCommand ClickCommand { get; }
 
-        public IdentityViewModel CreatedBy { get => new IdentityViewModel(this.gitPullRequest.CreatedBy, this.avatarDownloadAsyncCache, this.avatarCache, this.avatarPlaceholder); }
+        public IdentityViewModel CreatedBy { get => new IdentityViewModel(this.gitPullRequest.CreatedBy, this.avatarDownloadAsyncCache, this.avatarCache); }
 
         public string FormattedDate
         {
@@ -45,7 +42,7 @@ namespace PRTrackerUI.ViewModel
 
         public int ID { get => this.gitPullRequest.PullRequestId; }
 
-        public IEnumerable<IdentityWithVoteViewModel> Reviewers { get => this.gitPullRequest.Reviewers.Select((reviewer) => new IdentityWithVoteViewModel(reviewer, this.avatarDownloadAsyncCache, this.avatarCache, this.avatarPlaceholder)); }
+        public IEnumerable<IdentityWithVoteViewModel> Reviewers { get => this.gitPullRequest.Reviewers.Select((reviewer) => new IdentityWithVoteViewModel(reviewer, this.avatarDownloadAsyncCache, this.avatarCache)); }
 
         public string Status
         {

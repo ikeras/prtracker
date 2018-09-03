@@ -10,8 +10,8 @@ namespace PRTrackerUI.ViewModel
     {
         private readonly IdentityRefWithVote identityRefWithVote;
 
-        public IdentityWithVoteViewModel(IdentityRefWithVote identityRefWithVote, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, ConcurrentDictionary<string, BitmapImage> avatarCache, BitmapImage avatarPlaceholder)
-            : base(identityRefWithVote, avatarDownloadAsyncCache, avatarCache, avatarPlaceholder)
+        public IdentityWithVoteViewModel(IdentityRefWithVote identityRefWithVote, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, ConcurrentDictionary<string, BitmapImage> avatarCache)
+            : base(identityRefWithVote, avatarDownloadAsyncCache, avatarCache)
         {
             this.identityRefWithVote = identityRefWithVote;
         }
