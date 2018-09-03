@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -20,9 +21,10 @@ namespace PRTrackerUI.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
-        private ObservableCollection<PullRequestViewModel> pullRequests;
-        private bool loadEnabled;
+        private TrackerConfig config;
         private string iconSource = IconSources.Default;
+        private bool loadEnabled;
+        private ObservableCollection<PullRequestViewModel> pullRequests;
 
         public MainViewModel()
         {
@@ -57,8 +59,12 @@ namespace PRTrackerUI.ViewModel
 
         private void OnLaunchReviewTool()
         {
-            var pullRequest = this.SelectedPullRequest;
-            MessageBox.Show($"The pull request: {pullRequest.Title}");
+            // Handle errors
+            PullRequestViewModel pullRequest = this.SelectedPullRequest;
+            string reviewToolName = pullRequest.Query.ReviewTool ?? this.config.DefaultReviewTool;
+            TrackerReviewTool reviewTool = this.config.ReviewTools.FirstOrDefault((tool) => reviewToolName == tool.Name);
+
+            reviewTool.Launch(pullRequest.Query.AccountName, pullRequest.Query.Project, pullRequest.Query.RepoId, pullRequest.ID);
         }
 
         private TrackerConfig LoadConfig()
@@ -123,20 +129,23 @@ namespace PRTrackerUI.ViewModel
 
             Task.Run(async () =>
             {
-                TrackerConfig trackerConfig = this.LoadConfig();
+                if (this.config == null)
+                {
+                    this.config = this.LoadConfig();
+                }
 
                 IConnectionService connectionService = SimpleIoc.Default.GetInstance<IConnectionService>();
                 List<PullRequestViewModel> trackerPullRequests = new List<PullRequestViewModel>();
 
                 ConcurrentDictionary<string, BitmapImage> avatarCache = new ConcurrentDictionary<string, BitmapImage>();
 
-                foreach (TrackerQuery query in trackerConfig.Queries)
+                foreach (TrackerQuery query in this.config.Queries)
                 {
                     IPullRequestServices prServices = await connectionService.InitializePullRequestServicesAsync(query.AccountName, query.PersonalAccessToken, query.Project, query.RepoId);
 
                     List<GitPullRequest> prs = await prServices.GetPullRequestsAsync(PullRequestStatus.Completed);
                     AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(prServices));
-                    prs.ForEach((pullRequest) => trackerPullRequests.Add(new PullRequestViewModel(pullRequest, avatarCache, asyncCache)));
+                    prs.ForEach((pullRequest) => trackerPullRequests.Add(new PullRequestViewModel(pullRequest, avatarCache, asyncCache, query)));
                 }
 
                 await Application.Current.Dispatcher.InvokeAsync(() =>

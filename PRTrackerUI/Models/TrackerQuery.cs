@@ -1,6 +1,6 @@
 ﻿namespace PRTrackerUI.Models
 {
-    internal class TrackerQuery
+    public class TrackerQuery
     {
         public string AccountName { get; set; }
 

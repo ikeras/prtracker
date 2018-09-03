@@ -7,6 +7,7 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using PRTrackerUI.Common;
+using PRTrackerUI.Models;
 
 namespace PRTrackerUI.ViewModel
 {
@@ -15,12 +16,14 @@ namespace PRTrackerUI.ViewModel
         private readonly AsyncCache<string, BitmapImage> avatarDownloadAsyncCache;
         private readonly ConcurrentDictionary<string, BitmapImage> avatarCache;
         private readonly GitPullRequest gitPullRequest;
+        private readonly TrackerQuery query;
 
-        public PullRequestViewModel(GitPullRequest gitPullRequest, ConcurrentDictionary<string, BitmapImage> avatarCache, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache)
+        public PullRequestViewModel(GitPullRequest gitPullRequest, ConcurrentDictionary<string, BitmapImage> avatarCache, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, TrackerQuery query)
         {
             this.gitPullRequest = gitPullRequest;
             this.avatarCache = avatarCache;
             this.avatarDownloadAsyncCache = avatarDownloadAsyncCache;
+            this.query = query;
         }
 
         public RelayCommand ClickCommand { get; }
@@ -41,6 +44,8 @@ namespace PRTrackerUI.ViewModel
         }
 
         public int ID { get => this.gitPullRequest.PullRequestId; }
+
+        public TrackerQuery Query { get => this.query; }
 
         public IEnumerable<IdentityWithVoteViewModel> Reviewers { get => this.gitPullRequest.Reviewers.Select((reviewer) => new IdentityWithVoteViewModel(reviewer, this.avatarDownloadAsyncCache, this.avatarCache)); }
 
