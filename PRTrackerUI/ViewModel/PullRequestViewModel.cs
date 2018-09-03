@@ -1,26 +1,23 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
-using PRServicesClient.Services;
 using PRTrackerUI.Common;
 
-namespace PRTrackerUI.Models
+namespace PRTrackerUI.ViewModel
 {
-    public class TrackerPullRequest : ObservableObject
+    public class PullRequestViewModel : ObservableObject
     {
         private readonly AsyncCache<string, BitmapImage> avatarDownloadAsyncCache;
         private readonly ConcurrentDictionary<string, BitmapImage> avatarCache;
         private readonly GitPullRequest gitPullRequest;
         private readonly BitmapImage avatarPlaceholder;
 
-        public TrackerPullRequest(GitPullRequest gitPullRequest, ConcurrentDictionary<string, BitmapImage> avatarCache, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache)
+        public PullRequestViewModel(GitPullRequest gitPullRequest, ConcurrentDictionary<string, BitmapImage> avatarCache, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache)
         {
             this.gitPullRequest = gitPullRequest;
             this.avatarCache = avatarCache;
@@ -29,7 +26,9 @@ namespace PRTrackerUI.Models
             this.avatarPlaceholder.Freeze();
         }
 
-        public TrackerIdentity CreatedBy { get => new TrackerIdentity(this.gitPullRequest.CreatedBy, this.avatarDownloadAsyncCache, this.avatarCache, this.avatarPlaceholder); }
+        public RelayCommand ClickCommand { get; }
+
+        public IdentityViewModel CreatedBy { get => new IdentityViewModel(this.gitPullRequest.CreatedBy, this.avatarDownloadAsyncCache, this.avatarCache, this.avatarPlaceholder); }
 
         public string FormattedDate
         {
@@ -46,7 +45,7 @@ namespace PRTrackerUI.Models
 
         public int ID { get => this.gitPullRequest.PullRequestId; }
 
-        public IEnumerable<TrackerIdentityWithVote> Reviewers { get => this.gitPullRequest.Reviewers.Select((reviewer) => new TrackerIdentityWithVote(reviewer, this.avatarDownloadAsyncCache, this.avatarCache, this.avatarPlaceholder)); }
+        public IEnumerable<IdentityWithVoteViewModel> Reviewers { get => this.gitPullRequest.Reviewers.Select((reviewer) => new IdentityWithVoteViewModel(reviewer, this.avatarDownloadAsyncCache, this.avatarCache, this.avatarPlaceholder)); }
 
         public string Status
         {

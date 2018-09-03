@@ -5,16 +5,16 @@ using GalaSoft.MvvmLight;
 using Microsoft.VisualStudio.Services.WebApi;
 using PRTrackerUI.Common;
 
-namespace PRTrackerUI.Models
+namespace PRTrackerUI.ViewModel
 {
-    public class TrackerIdentity : ObservableObject
+    public class IdentityViewModel : ObservableObject
     {
         private readonly AsyncCache<string, BitmapImage> avatarDownloadAsyncCache;
         private readonly ConcurrentDictionary<string, BitmapImage> avatarCache;
         private readonly BitmapImage avatarPlaceholder;
         private readonly IdentityRef identityRef;
 
-        public TrackerIdentity(IdentityRef identityRef, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, ConcurrentDictionary<string, BitmapImage> avatarCache, BitmapImage avatarPlaceholder)
+        public IdentityViewModel(IdentityRef identityRef, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, ConcurrentDictionary<string, BitmapImage> avatarCache, BitmapImage avatarPlaceholder)
         {
             this.identityRef = identityRef;
             this.avatarDownloadAsyncCache = avatarDownloadAsyncCache;

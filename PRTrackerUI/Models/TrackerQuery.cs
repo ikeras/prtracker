@@ -9,5 +9,7 @@
         public string Project { get; set; }
 
         public string RepoId { get; set; }
+
+        public string ReviewTool { get; set; }
     }
 }

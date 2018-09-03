@@ -3,26 +3,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:tb="http://www.hardcodet.net/taskbar"
-        xmlns:local="clr-namespace:PRTrackerUI"
+        xmlns:Command="http://www.galasoft.ch/mvvmlight"
         DataContext="{Binding Main, Source={StaticResource Locator}}"
         mc:Ignorable="d"
         Visibility="Hidden"
         Title="MainWindow" Height="400" Width="800">
 
     <Window.Resources>
-        <Style x:Key="GridMouseOverKey" TargetType="{x:Type Grid}">
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="False">
-                    <Setter Property="Background" Value="Transparent" />
-                </Trigger>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="AliceBlue" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverterKey"/>
+        <BitmapImage x:Key="PlaceholderImage" UriSource="/PRTrackerUI;component/Images/placeholder.png" />
     </Window.Resources>
 
     <Grid>
@@ -41,69 +32,77 @@
 
                         <Button Grid.Row="1" Content="Load completed" Command="{Binding LoadCommand}" IsEnabled="{Binding IsLoadEnabled}"/>
 
-                        <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="2">
-                            <ItemsControl ItemsSource="{Binding PullRequests}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Style="{StaticResource GridMouseOverKey}">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
+                        <ListView ItemsSource="{Binding PullRequests}" SelectedItem="{Binding SelectedPullRequest, UpdateSourceTrigger=PropertyChanged}" Grid.Row="2" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="MouseDoubleClick">
+                                    <Command:EventToCommand Command="{Binding LaunchReviewToolCommand}" />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
 
-                                            <Ellipse Height="40" Width="40" Grid.Column="0">
-                                                <Ellipse.Fill>
-                                                    <ImageBrush ImageSource="{Binding CreatedBy.AvatarImage}"/>
-                                                </Ellipse.Fill>
-                                            </Ellipse>
+                                        <Ellipse Height="40" Width="40" Grid.Column="0">
+                                            <Ellipse.Fill>
+                                                <ImageBrush ImageSource="{Binding CreatedBy.AvatarImage, FallbackValue={StaticResource PlaceholderImage}, TargetNullValue={StaticResource PlaceholderImage}}"/>
+                                            </Ellipse.Fill>
+                                        </Ellipse>
 
-                                            <Grid Grid.Column="1">
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
-                                                <TextBlock Text="{Binding Title}" Grid.Row="0" />
-                                                <TextBlock Grid.Row="1">
+                                        <Grid Grid.Column="1">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Text="{Binding Title}" Grid.Row="0" />
+                                            <TextBlock Grid.Row="1">
                                                     <Run Text="{Binding CreatedBy.DisplayName, Mode=OneWay}" /> requested #<Run Text="{Binding ID, Mode=OneWay}" /> into <Run FontFamily="{StaticResource Bowtie}" Text="&#xea35;" /><Run Text="{Binding TargetBranchName, Mode=OneWay}" />
-                                                </TextBlock>
-                                            </Grid>
-
-                                            <Grid Grid.Column="2">
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
-                                                <ItemsControl Grid.Row="0" ItemsSource="{Binding Reviewers}" HorizontalAlignment="Right">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate>
-                                                            <StackPanel Orientation="Horizontal" />
-                                                        </ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <Canvas Height="24" Width="24">
-                                                                <Ellipse Height="18" Width="18">
-                                                                    <Ellipse.Fill>
-                                                                        <ImageBrush ImageSource="{Binding AvatarImage}"/>
-                                                                    </Ellipse.Fill>
-                                                                </Ellipse>
-                                                                <TextBlock Canvas.Top="10" Canvas.Left="10" Visibility="{Binding IsOverlayVisible, Converter={StaticResource BoolToVisibilityConverterKey}}">
-                                                                    <Run FontFamily="{StaticResource Bowtie}" Foreground="{Binding Brush}" Text="{Binding OverlayText, Mode=OneWay}" />
-                                                                </TextBlock>
-                                                            </Canvas>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                                <TextBlock Grid.Row="1">
-                                                    <Run Text="{Binding Status, Mode=OneWay}" /> <Run Text="{Binding FormattedDate, Mode=OneWay}" />
-                                                </TextBlock>
-                                            </Grid>
+                                            </TextBlock>
                                         </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
+
+                                        <Grid Grid.Column="2">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <ItemsControl Grid.Row="0" ItemsSource="{Binding Reviewers}" HorizontalAlignment="Right">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Canvas Height="24" Width="24">
+                                                            <Ellipse Height="18" Width="18">
+                                                                <Ellipse.Fill>
+                                                                    <ImageBrush ImageSource="{Binding AvatarImage, FallbackValue={StaticResource PlaceholderImage}, TargetNullValue={StaticResource PlaceholderImage}}"/>
+                                                                </Ellipse.Fill>
+                                                            </Ellipse>
+                                                            <TextBlock Canvas.Top="10" Canvas.Left="10" Visibility="{Binding IsOverlayVisible, Converter={StaticResource BoolToVisibilityConverterKey}}">
+                                                                    <Run FontFamily="{StaticResource Bowtie}" Foreground="{Binding Brush}" Text="{Binding OverlayText, Mode=OneWay}" />
+                                                            </TextBlock>
+                                                        </Canvas>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <TextBlock Grid.Row="1">
+                                                    <Run Text="{Binding Status, Mode=OneWay}" /> <Run Text="{Binding FormattedDate, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
                     </Grid>
                 </Border>
             </tb:TaskbarIcon.TrayPopup>

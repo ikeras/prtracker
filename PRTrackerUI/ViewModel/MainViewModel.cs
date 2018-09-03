@@ -20,13 +20,14 @@ namespace PRTrackerUI.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
-        private ObservableCollection<TrackerPullRequest> pullRequests;
+        private ObservableCollection<PullRequestViewModel> pullRequests;
         private bool loadEnabled;
         private string iconSource = IconSources.Default;
 
         public MainViewModel()
         {
             this.IsLoadEnabled = true;
+            this.LaunchReviewToolCommand = new RelayCommand(this.OnLaunchReviewTool);
             this.LoadCommand = new RelayCommand(this.OnLoadCommand);
         }
 
@@ -36,18 +37,28 @@ namespace PRTrackerUI.ViewModel
             set => this.Set(nameof(this.IconSource), ref this.iconSource, value);
         }
 
-        public RelayCommand LoadCommand { get; }
-
         public bool IsLoadEnabled
         {
             get => this.loadEnabled;
             set => this.Set(nameof(this.IsLoadEnabled), ref this.loadEnabled, value);
         }
 
-        public ObservableCollection<TrackerPullRequest> PullRequests
+        public RelayCommand LaunchReviewToolCommand { get; }
+
+        public RelayCommand LoadCommand { get; }
+
+        public ObservableCollection<PullRequestViewModel> PullRequests
         {
             get => this.pullRequests;
             set => this.Set(nameof(this.PullRequests), ref this.pullRequests, value);
+        }
+
+        public PullRequestViewModel SelectedPullRequest { get; set; }
+
+        private void OnLaunchReviewTool()
+        {
+            var pullRequest = this.SelectedPullRequest;
+            MessageBox.Show($"The pull request: {pullRequest.Title}");
         }
 
         private TrackerConfig LoadConfig()
@@ -115,7 +126,7 @@ namespace PRTrackerUI.ViewModel
                 TrackerConfig trackerConfig = this.LoadConfig();
 
                 IConnectionService connectionService = SimpleIoc.Default.GetInstance<IConnectionService>();
-                List<TrackerPullRequest> trackerPullRequests = new List<TrackerPullRequest>();
+                List<PullRequestViewModel> trackerPullRequests = new List<PullRequestViewModel>();
 
                 ConcurrentDictionary<string, BitmapImage> avatarCache = new ConcurrentDictionary<string, BitmapImage>();
 
@@ -125,12 +136,12 @@ namespace PRTrackerUI.ViewModel
 
                     List<GitPullRequest> prs = await prServices.GetPullRequestsAsync(PullRequestStatus.Completed);
                     AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(prServices));
-                    prs.ForEach((pullRequest) => trackerPullRequests.Add(new TrackerPullRequest(pullRequest, avatarCache, asyncCache)));
+                    prs.ForEach((pullRequest) => trackerPullRequests.Add(new PullRequestViewModel(pullRequest, avatarCache, asyncCache)));
                 }
 
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    this.PullRequests = new ObservableCollection<TrackerPullRequest>(trackerPullRequests);
+                    this.PullRequests = new ObservableCollection<PullRequestViewModel>(trackerPullRequests);
                     this.IconSource = trackerPullRequests.Count > 0 ? IconSources.Action : IconSources.Default;
                     this.IsLoadEnabled = true;
                 });

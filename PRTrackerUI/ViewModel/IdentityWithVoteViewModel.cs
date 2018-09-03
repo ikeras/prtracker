@@ -4,13 +4,13 @@ using System.Windows.Media.Imaging;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using PRTrackerUI.Common;
 
-namespace PRTrackerUI.Models
+namespace PRTrackerUI.ViewModel
 {
-    public class TrackerIdentityWithVote : TrackerIdentity
+    public class IdentityWithVoteViewModel : IdentityViewModel
     {
         private readonly IdentityRefWithVote identityRefWithVote;
 
-        public TrackerIdentityWithVote(IdentityRefWithVote identityRefWithVote, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, ConcurrentDictionary<string, BitmapImage> avatarCache, BitmapImage avatarPlaceholder)
+        public IdentityWithVoteViewModel(IdentityRefWithVote identityRefWithVote, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, ConcurrentDictionary<string, BitmapImage> avatarCache, BitmapImage avatarPlaceholder)
             : base(identityRefWithVote, avatarDownloadAsyncCache, avatarCache, avatarPlaceholder)
         {
             this.identityRefWithVote = identityRefWithVote;

@@ -59,10 +59,11 @@
     <Compile Include="Common\AsyncCache.cs" />
     <Compile Include="Common\IconSources.cs" />
     <Compile Include="Models\TrackerConfig.cs" />
-    <Compile Include="Models\TrackerIdentity.cs" />
-    <Compile Include="Models\TrackerIdentityWithVote.cs" />
-    <Compile Include="Models\TrackerPullRequest.cs" />
+    <Compile Include="ViewModel\IdentityViewModel.cs" />
+    <Compile Include="ViewModel\IdentityWithVoteViewModel.cs" />
+    <Compile Include="ViewModel\PullRequestViewModel.cs" />
     <Compile Include="Models\TrackerQuery.cs" />
+    <Compile Include="Models\TrackerReviewTool.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Page Include="MainWindow.xaml">
@@ -139,6 +140,9 @@
     </PackageReference>
     <PackageReference Include="StyleCop.Analyzers">
       <Version>1.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="System.Windows.Interactivity.WPF">
+      <Version>2.0.20525</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
