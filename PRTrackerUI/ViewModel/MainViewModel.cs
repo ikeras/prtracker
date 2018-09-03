@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using CommonServiceLocator;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Ioc;
@@ -16,6 +17,7 @@ using Microsoft.TeamFoundation.SourceControl.WebApi;
 using PRServicesClient.Services;
 using PRTrackerUI.Common;
 using PRTrackerUI.Models;
+using PRTrackerUI.ViewServices;
 
 namespace PRTrackerUI.ViewModel
 {
@@ -56,6 +58,8 @@ namespace PRTrackerUI.ViewModel
         }
 
         public PullRequestViewModel SelectedPullRequest { get; set; }
+
+        private INotificationService NotificationService { get => ServiceLocator.Current.GetInstance<INotificationService>(); }
 
         private void OnLaunchReviewTool()
         {
@@ -134,7 +138,7 @@ namespace PRTrackerUI.ViewModel
                     this.config = this.LoadConfig();
                 }
 
-                IConnectionService connectionService = SimpleIoc.Default.GetInstance<IConnectionService>();
+                IConnectionService connectionService = ServiceLocator.Current.GetInstance<IConnectionService>();
                 List<PullRequestViewModel> trackerPullRequests = new List<PullRequestViewModel>();
 
                 ConcurrentDictionary<string, BitmapImage> avatarCache = new ConcurrentDictionary<string, BitmapImage>();
@@ -157,6 +161,7 @@ namespace PRTrackerUI.ViewModel
                     this.PullRequests = new ObservableCollection<PullRequestViewModel>(trackerPullRequests);
                     this.IconSource = trackerPullRequests.Count > 0 ? IconSources.Action : IconSources.Default;
                     this.IsLoadEnabled = true;
+                    this.NotificationService.ShowNotification("PRTracker", "Pull requests loaded", NotificationType.Info);
                 });
             });
         }

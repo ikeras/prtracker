@@ -17,7 +17,7 @@
     </Window.Resources>
 
     <Grid>
-        <tb:TaskbarIcon IconSource="{Binding IconSource}" ToolTipText="PR Tracker">
+        <tb:TaskbarIcon x:Name="prTrackerTaskBarIcon" IconSource="{Binding IconSource}" ToolTipText="PR Tracker">
 
             <tb:TaskbarIcon.TrayPopup>
                 <Border Background="White" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Width="800" Height="400">
