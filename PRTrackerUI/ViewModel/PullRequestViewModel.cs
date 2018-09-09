@@ -4,29 +4,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media.Imaging;
 using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Command;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using PRTrackerUI.Common;
 using PRTrackerUI.Models;
 
 namespace PRTrackerUI.ViewModel
 {
-    public class PullRequestViewModel : ObservableObject
+    public class PullRequestViewModel : ObservableObject, IEqualityComparer<PullRequestViewModel>
     {
         private readonly AsyncCache<string, BitmapImage> avatarDownloadAsyncCache;
         private readonly ConcurrentDictionary<string, BitmapImage> avatarCache;
         private readonly GitPullRequest gitPullRequest;
-        private readonly TrackerQuery query;
 
         public PullRequestViewModel(GitPullRequest gitPullRequest, ConcurrentDictionary<string, BitmapImage> avatarCache, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, TrackerQuery query)
         {
             this.gitPullRequest = gitPullRequest;
             this.avatarCache = avatarCache;
             this.avatarDownloadAsyncCache = avatarDownloadAsyncCache;
-            this.query = query;
+            this.Query = query;
         }
-
-        public RelayCommand ClickCommand { get; }
 
         public IdentityViewModel CreatedBy { get => new IdentityViewModel(this.gitPullRequest.CreatedBy, this.avatarDownloadAsyncCache, this.avatarCache); }
 
@@ -45,7 +41,7 @@ namespace PRTrackerUI.ViewModel
 
         public int ID { get => this.gitPullRequest.PullRequestId; }
 
-        public TrackerQuery Query { get => this.query; }
+        public TrackerQuery Query { get; }
 
         public IEnumerable<IdentityWithVoteViewModel> Reviewers { get => this.gitPullRequest.Reviewers.Select((reviewer) => new IdentityWithVoteViewModel(reviewer, this.avatarDownloadAsyncCache, this.avatarCache)); }
 
@@ -95,5 +91,23 @@ namespace PRTrackerUI.ViewModel
         public string Title { get => this.gitPullRequest.Title; }
 
         public string Url { get => this.gitPullRequest.Url; }
+
+        public bool Equals(PullRequestViewModel x, PullRequestViewModel y) => x.ID == y.ID && x.Query.AccountName == y.Query.AccountName &&
+            x.Query.Project == y.Query.Project && x.Query.RepoId == y.Query.RepoId;
+
+        public int GetHashCode(PullRequestViewModel obj)
+        {
+            unchecked
+            {
+                int hash = 17;
+
+                hash = (hash * 23) + this.ID.GetHashCode();
+                hash = (hash * 23) + this.Query.AccountName.GetHashCode();
+                hash = (hash * 23) + this.Query.Project.GetHashCode();
+                hash = (hash * 23) + this.Query.RepoId.GetHashCode();
+
+                return hash;
+            }
+        }
     }
 }

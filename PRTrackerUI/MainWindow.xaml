@@ -8,8 +8,20 @@
         xmlns:Command="http://www.galasoft.ch/mvvmlight"
         DataContext="{Binding Main, Source={StaticResource Locator}}"
         mc:Ignorable="d"
-        Visibility="Hidden"
-        Title="MainWindow" Height="400" Width="800">
+        Title="MainWindow" 
+        Height="0" 
+        Width="0" 
+        ShowInTaskbar="False" 
+        ShowActivated="False" 
+        WindowStyle="None"
+        ResizeMode="NoResize">
+
+    <!-- The Loaded event will not fire unless the Window is shown, so it's shown invisibly to generate the event -->
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <Command:EventToCommand Command="{Binding LoadCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverterKey"/>
@@ -30,7 +42,7 @@
 
                         <TextBlock Text="Pull Requests" Grid.Row="0" />
 
-                        <Button Grid.Row="1" Content="Load completed" Command="{Binding LoadCommand}" IsEnabled="{Binding IsLoadEnabled}"/>
+                        <ProgressBar Grid.Row="1" IsIndeterminate="True" Visibility="{Binding IsUpdating, Converter={StaticResource BoolToVisibilityConverterKey}}"/>
 
                         <ListView ItemsSource="{Binding PullRequests}" SelectedItem="{Binding SelectedPullRequest, UpdateSourceTrigger=PropertyChanged}" Grid.Row="2" ScrollViewer.VerticalScrollBarVisibility="Auto">
                             <i:Interaction.Triggers>

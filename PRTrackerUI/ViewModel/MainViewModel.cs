@@ -8,10 +8,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using CommonServiceLocator;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
-using GalaSoft.MvvmLight.Ioc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using PRServicesClient.Services;
@@ -27,10 +27,12 @@ namespace PRTrackerUI.ViewModel
         private string iconSource = IconSources.Default;
         private bool loadEnabled;
         private ObservableCollection<PullRequestViewModel> pullRequests;
+        private PullRequestViewModel selectedPullRequest;
+        private DispatcherTimer timer;
 
         public MainViewModel()
         {
-            this.IsLoadEnabled = true;
+            this.IsUpdating = false;
             this.LaunchReviewToolCommand = new RelayCommand(this.OnLaunchReviewTool);
             this.LoadCommand = new RelayCommand(this.OnLoadCommand);
         }
@@ -41,10 +43,10 @@ namespace PRTrackerUI.ViewModel
             set => this.Set(nameof(this.IconSource), ref this.iconSource, value);
         }
 
-        public bool IsLoadEnabled
+        public bool IsUpdating
         {
             get => this.loadEnabled;
-            set => this.Set(nameof(this.IsLoadEnabled), ref this.loadEnabled, value);
+            set => this.Set(nameof(this.IsUpdating), ref this.loadEnabled, value);
         }
 
         public RelayCommand LaunchReviewToolCommand { get; }
@@ -57,7 +59,11 @@ namespace PRTrackerUI.ViewModel
             set => this.Set(nameof(this.PullRequests), ref this.pullRequests, value);
         }
 
-        public PullRequestViewModel SelectedPullRequest { get; set; }
+        public PullRequestViewModel SelectedPullRequest
+        {
+            get => this.selectedPullRequest;
+            set => this.Set(nameof(this.SelectedPullRequest), ref this.selectedPullRequest, value);
+        }
 
         private INotificationService NotificationService { get => ServiceLocator.Current.GetInstance<INotificationService>(); }
 
@@ -69,19 +75,6 @@ namespace PRTrackerUI.ViewModel
             TrackerReviewTool reviewTool = this.config.ReviewTools.FirstOrDefault((tool) => reviewToolName == tool.Name);
 
             reviewTool.Launch(pullRequest.Query.AccountName, pullRequest.Query.Project, pullRequest.Query.RepoId, pullRequest.ID);
-        }
-
-        private TrackerConfig LoadConfig()
-        {
-            IConfigurationRoot configuration =
-                new ConfigurationBuilder().
-                AddJsonFile("config.json").
-                Build();
-
-            TrackerConfig trackerConfig = new TrackerConfig();
-            configuration.Bind(trackerConfig);
-
-            return trackerConfig;
         }
 
         private Func<string, Task<BitmapImage>> GetDownloadAvatarImageAsync(IPullRequestServices pullRequestServices)
@@ -127,17 +120,28 @@ namespace PRTrackerUI.ViewModel
             };
         }
 
-        private void OnLoadCommand()
+        private async Task<TrackerConfig> LoadConfig()
         {
-            this.IsLoadEnabled = false;
+            return await Task.Run(() =>
+            {
+                IConfigurationRoot configuration =
+                new ConfigurationBuilder().
+                AddJsonFile("config.json").
+                Build();
+
+                TrackerConfig trackerConfig = new TrackerConfig();
+                configuration.Bind(trackerConfig);
+
+                return trackerConfig;
+            });
+        }
+
+        private void LoadPullRequests()
+        {
+            this.IsUpdating = true;
 
             Task.Run(async () =>
             {
-                if (this.config == null)
-                {
-                    this.config = this.LoadConfig();
-                }
-
                 IConnectionService connectionService = ServiceLocator.Current.GetInstance<IConnectionService>();
                 List<PullRequestViewModel> trackerPullRequests = new List<PullRequestViewModel>();
 
@@ -158,12 +162,44 @@ namespace PRTrackerUI.ViewModel
 
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
+                    // We merge the old and new list together, and if the size is larger, that means there are new PRs to review
+                    bool showNotification = this.PullRequests != null ? this.PullRequests.Union(trackerPullRequests).Count() > this.PullRequests.Count : false;
                     this.PullRequests = new ObservableCollection<PullRequestViewModel>(trackerPullRequests);
                     this.IconSource = trackerPullRequests.Count > 0 ? IconSources.Action : IconSources.Default;
-                    this.IsLoadEnabled = true;
-                    this.NotificationService.ShowNotification("PRTracker", "Pull requests loaded", NotificationType.Info);
+                    this.IsUpdating = false;
+                    if (showNotification)
+                    {
+                        this.NotificationService.ShowNotification("PRTracker", "New PRs to review", NotificationType.Info);
+                    }
                 });
             });
+        }
+
+        private void OnLoadCommand()
+        {
+            this.IsUpdating = true;
+
+            Task.Run(async () =>
+            {
+                this.config = await this.LoadConfig();
+
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    this.LoadPullRequests();
+
+                    this.timer = new DispatcherTimer
+                    {
+                        Interval = TimeSpan.FromMinutes(this.config.UpdateInterval),
+                    };
+                    this.timer.Tick += this.OnTimerTick;
+                    this.timer.Start();
+                });
+            });
+        }
+
+        private void OnTimerTick(object sender, EventArgs e)
+        {
+            this.LoadPullRequests();
         }
     }
 }

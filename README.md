@@ -28,8 +28,9 @@ PRTracker expects a config.json to be placed alongside the executable. This conf
       "project": "<VSTS Project>",
       "repoId": "<VSTS repo name>",
       "reviewTool":  "<optional property that specifes the name of a tool specified in reviewTools, useful to override the defaultReviewTool>",
-      "uniqueUserId": <VSTS unique user ID, usually an email - this will cause the tool to omit any PRs that have been approved by this user>
-    }
+      "uniqueUserId": "<VSTS unique user ID, usually an email - this will cause the tool to omit any PRs that have been approved by this user>"
+    },
+    "updateInterval": <number of minutes to wait between updates>
   ]
 }
 ```

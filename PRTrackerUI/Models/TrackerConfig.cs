@@ -9,5 +9,7 @@
         public string DefaultReviewTool { get; set; }
 
         public TrackerQuery[] Queries { get; set; }
+
+        public int UpdateInterval { get; set; }
     }
 }
