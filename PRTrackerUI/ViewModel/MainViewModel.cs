@@ -24,14 +24,15 @@ namespace PRTrackerUI.ViewModel
     public class MainViewModel : ViewModelBase
     {
         private TrackerConfig config;
-        private string iconSource = IconSources.Default;
+        private string iconSource;
         private bool loadEnabled;
-        private ObservableCollection<PullRequestViewModel> pullRequests;
-        private PullRequestViewModel selectedPullRequest;
+        private ObservableCollection<TrackerPullRequest> pullRequests;
+        private TrackerPullRequest selectedPullRequest;
         private DispatcherTimer timer;
 
         public MainViewModel()
         {
+            this.iconSource = IconSources.Default;
             this.IsUpdating = false;
             this.LaunchReviewToolCommand = new RelayCommand(this.OnLaunchReviewTool);
             this.LoadCommand = new RelayCommand(this.OnLoadCommand);
@@ -53,13 +54,13 @@ namespace PRTrackerUI.ViewModel
 
         public RelayCommand LoadCommand { get; }
 
-        public ObservableCollection<PullRequestViewModel> PullRequests
+        public ObservableCollection<TrackerPullRequest> PullRequests
         {
             get => this.pullRequests;
             set => this.Set(nameof(this.PullRequests), ref this.pullRequests, value);
         }
 
-        public PullRequestViewModel SelectedPullRequest
+        public TrackerPullRequest SelectedPullRequest
         {
             get => this.selectedPullRequest;
             set => this.Set(nameof(this.SelectedPullRequest), ref this.selectedPullRequest, value);
@@ -70,7 +71,7 @@ namespace PRTrackerUI.ViewModel
         private void OnLaunchReviewTool()
         {
             // Handle errors
-            PullRequestViewModel pullRequest = this.SelectedPullRequest;
+            TrackerPullRequest pullRequest = this.SelectedPullRequest;
             string reviewToolName = pullRequest.Query.ReviewTool ?? this.config.DefaultReviewTool;
             TrackerReviewTool reviewTool = this.config.ReviewTools.FirstOrDefault((tool) => reviewToolName == tool.Name);
 
@@ -143,7 +144,7 @@ namespace PRTrackerUI.ViewModel
             Task.Run(async () =>
             {
                 IConnectionService connectionService = ServiceLocator.Current.GetInstance<IConnectionService>();
-                List<PullRequestViewModel> trackerPullRequests = new List<PullRequestViewModel>();
+                List<TrackerPullRequest> trackerPullRequests = new List<TrackerPullRequest>();
 
                 ConcurrentDictionary<string, BitmapImage> avatarCache = new ConcurrentDictionary<string, BitmapImage>();
 
@@ -156,7 +157,7 @@ namespace PRTrackerUI.ViewModel
 
                     foreach (GitPullRequest pullRequest in prs)
                     {
-                        trackerPullRequests.Add(new PullRequestViewModel(pullRequest, avatarCache, asyncCache, query));
+                        trackerPullRequests.Add(new TrackerPullRequest(pullRequest, avatarCache, asyncCache, query));
                     }
                 }
 
@@ -164,7 +165,7 @@ namespace PRTrackerUI.ViewModel
                 {
                     // We merge the old and new list together, and if the size is larger, that means there are new PRs to review
                     bool showNotification = this.PullRequests != null ? this.PullRequests.Union(trackerPullRequests).Count() > this.PullRequests.Count : false;
-                    this.PullRequests = new ObservableCollection<PullRequestViewModel>(trackerPullRequests);
+                    this.PullRequests = new ObservableCollection<TrackerPullRequest>(trackerPullRequests);
                     this.IconSource = trackerPullRequests.Count > 0 ? IconSources.Action : IconSources.Default;
                     this.IsUpdating = false;
                     if (showNotification)

@@ -8,15 +8,15 @@ using Microsoft.TeamFoundation.SourceControl.WebApi;
 using PRTrackerUI.Common;
 using PRTrackerUI.Models;
 
-namespace PRTrackerUI.ViewModel
+namespace PRTrackerUI.Models
 {
-    public class PullRequestViewModel : ObservableObject, IEqualityComparer<PullRequestViewModel>
+    public class TrackerPullRequest : IEqualityComparer<TrackerPullRequest>
     {
         private readonly AsyncCache<string, BitmapImage> avatarDownloadAsyncCache;
         private readonly ConcurrentDictionary<string, BitmapImage> avatarCache;
         private readonly GitPullRequest gitPullRequest;
 
-        public PullRequestViewModel(GitPullRequest gitPullRequest, ConcurrentDictionary<string, BitmapImage> avatarCache, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, TrackerQuery query)
+        public TrackerPullRequest(GitPullRequest gitPullRequest, ConcurrentDictionary<string, BitmapImage> avatarCache, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, TrackerQuery query)
         {
             this.gitPullRequest = gitPullRequest;
             this.avatarCache = avatarCache;
@@ -24,7 +24,7 @@ namespace PRTrackerUI.ViewModel
             this.Query = query;
         }
 
-        public IdentityViewModel CreatedBy { get => new IdentityViewModel(this.gitPullRequest.CreatedBy, this.avatarDownloadAsyncCache, this.avatarCache); }
+        public TrackerIdentity CreatedBy { get => new TrackerIdentity(this.gitPullRequest.CreatedBy, this.avatarDownloadAsyncCache, this.avatarCache); }
 
         public string FormattedDate
         {
@@ -43,7 +43,7 @@ namespace PRTrackerUI.ViewModel
 
         public TrackerQuery Query { get; }
 
-        public IEnumerable<IdentityWithVoteViewModel> Reviewers { get => this.gitPullRequest.Reviewers.Select((reviewer) => new IdentityWithVoteViewModel(reviewer, this.avatarDownloadAsyncCache, this.avatarCache)); }
+        public IEnumerable<TrackerIdentityWithVote> Reviewers { get => this.gitPullRequest.Reviewers.Select((reviewer) => new TrackerIdentityWithVote(reviewer, this.avatarDownloadAsyncCache, this.avatarCache)); }
 
         public string Status
         {
@@ -92,10 +92,10 @@ namespace PRTrackerUI.ViewModel
 
         public string Url { get => this.gitPullRequest.Url; }
 
-        public bool Equals(PullRequestViewModel x, PullRequestViewModel y) => x.ID == y.ID && x.Query.AccountName == y.Query.AccountName &&
+        public bool Equals(TrackerPullRequest x, TrackerPullRequest y) => x.ID == y.ID && x.Query.AccountName == y.Query.AccountName &&
             x.Query.Project == y.Query.Project && x.Query.RepoId == y.Query.RepoId;
 
-        public int GetHashCode(PullRequestViewModel obj)
+        public int GetHashCode(TrackerPullRequest obj)
         {
             unchecked
             {
