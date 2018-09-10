@@ -3,14 +3,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media.Imaging;
-using GalaSoft.MvvmLight;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using PRTrackerUI.Common;
-using PRTrackerUI.Models;
 
 namespace PRTrackerUI.Models
 {
-    public class TrackerPullRequest : IEqualityComparer<TrackerPullRequest>
+    public class TrackerPullRequest
     {
         private readonly AsyncCache<string, BitmapImage> avatarDownloadAsyncCache;
         private readonly ConcurrentDictionary<string, BitmapImage> avatarCache;
@@ -91,23 +89,5 @@ namespace PRTrackerUI.Models
         public string Title { get => this.gitPullRequest.Title; }
 
         public string Url { get => this.gitPullRequest.Url; }
-
-        public bool Equals(TrackerPullRequest x, TrackerPullRequest y) => x.ID == y.ID && x.Query.AccountName == y.Query.AccountName &&
-            x.Query.Project == y.Query.Project && x.Query.RepoId == y.Query.RepoId;
-
-        public int GetHashCode(TrackerPullRequest obj)
-        {
-            unchecked
-            {
-                int hash = 17;
-
-                hash = (hash * 23) + this.ID.GetHashCode();
-                hash = (hash * 23) + this.Query.AccountName.GetHashCode();
-                hash = (hash * 23) + this.Query.Project.GetHashCode();
-                hash = (hash * 23) + this.Query.RepoId.GetHashCode();
-
-                return hash;
-            }
-        }
     }
 }

@@ -64,7 +64,7 @@
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
-                                        <Ellipse Height="40" Width="40" Grid.Column="0">
+                                        <Ellipse Height="40" Width="40" Grid.Column="0" Margin="0, 0, 5, 0">
                                             <Ellipse.Fill>
                                                 <ImageBrush ImageSource="{Binding CreatedBy.AvatarImage, FallbackValue={StaticResource PlaceholderImage}, TargetNullValue={StaticResource PlaceholderImage}}"/>
                                             </Ellipse.Fill>

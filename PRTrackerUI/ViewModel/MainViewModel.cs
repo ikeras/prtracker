@@ -164,7 +164,7 @@ namespace PRTrackerUI.ViewModel
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     // We merge the old and new list together, and if the size is larger, that means there are new PRs to review
-                    bool showNotification = this.PullRequests != null ? this.PullRequests.Union(trackerPullRequests).Count() > this.PullRequests.Count : false;
+                    bool showNotification = this.PullRequests != null ? this.PullRequests.Union(trackerPullRequests, TrackerPullRequestComparer.Default).Count() > this.PullRequests.Count : false;
                     this.PullRequests = new ObservableCollection<TrackerPullRequest>(trackerPullRequests);
                     this.IconSource = trackerPullRequests.Count > 0 ? IconSources.Action : IconSources.Default;
                     this.IsUpdating = false;
