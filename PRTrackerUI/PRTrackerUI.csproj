@@ -67,22 +67,19 @@
     <Compile Include="Models\TrackerPullRequestComparer.cs" />
     <Compile Include="Models\TrackerQuery.cs" />
     <Compile Include="Models\TrackerReviewTool.cs" />
-    <Compile Include="ViewModel\TrackerTaskTrayIconViewModel.cs" />
+    <Compile Include="ViewModel\TrackerTrayIconViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Compile Include="ViewServices\INotificationService.cs" />
+    <Compile Include="ViewServices\NotificationService.cs" />
     <Compile Include="ViewServices\NotificationType.cs" />
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
+    <Page Include="TrackerTrayIconResources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

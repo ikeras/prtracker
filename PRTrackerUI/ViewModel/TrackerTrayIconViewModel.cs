@@ -21,22 +21,26 @@ using PRTrackerUI.ViewServices;
 
 namespace PRTrackerUI.ViewModel
 {
-    public class TrackerTaskTrayIconViewModel : ViewModelBase
+    public class TrackerTrayIconViewModel : ViewModelBase
     {
         private TrackerConfig config;
         private string iconSource;
         private bool loadEnabled;
         private ObservableCollection<TrackerPullRequest> pullRequests;
         private TrackerPullRequest selectedPullRequest;
-        private DispatcherTimer timer;
+        private DispatcherTimer refreshTimer;
 
-        public TrackerTaskTrayIconViewModel()
+        public TrackerTrayIconViewModel()
         {
+            this.ExitApplicationCommand = new RelayCommand(this.OnExitApplication);
             this.iconSource = IconSources.Default;
             this.IsUpdating = false;
             this.LaunchReviewToolCommand = new RelayCommand(this.OnLaunchReviewTool);
-            this.LoadCommand = new RelayCommand(this.OnLoadCommand);
+
+            this.LoadConfigAndStartRefreshTimer();
         }
+
+        public RelayCommand ExitApplicationCommand { get; }
 
         public string IconSource
         {
@@ -51,8 +55,6 @@ namespace PRTrackerUI.ViewModel
         }
 
         public RelayCommand LaunchReviewToolCommand { get; }
-
-        public RelayCommand LoadCommand { get; }
 
         public ObservableCollection<TrackerPullRequest> PullRequests
         {
@@ -137,6 +139,28 @@ namespace PRTrackerUI.ViewModel
             });
         }
 
+        private void LoadConfigAndStartRefreshTimer()
+        {
+            this.IsUpdating = true;
+
+            Task.Run(async () =>
+            {
+                this.config = await this.LoadConfig();
+
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    this.LoadPullRequests();
+
+                    this.refreshTimer = new DispatcherTimer
+                    {
+                        Interval = TimeSpan.FromMinutes(this.config.UpdateInterval),
+                    };
+                    this.refreshTimer.Tick += this.OnTimerTick;
+                    this.refreshTimer.Start();
+                });
+            });
+        }
+
         private void LoadPullRequests()
         {
             this.IsUpdating = true;
@@ -176,26 +200,9 @@ namespace PRTrackerUI.ViewModel
             });
         }
 
-        private void OnLoadCommand()
+        private void OnExitApplication()
         {
-            this.IsUpdating = true;
-
-            Task.Run(async () =>
-            {
-                this.config = await this.LoadConfig();
-
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    this.LoadPullRequests();
-
-                    this.timer = new DispatcherTimer
-                    {
-                        Interval = TimeSpan.FromMinutes(this.config.UpdateInterval),
-                    };
-                    this.timer.Tick += this.OnTimerTick;
-                    this.timer.Start();
-                });
-            });
+            Application.Current.Shutdown();
         }
 
         private void OnTimerTick(object sender, EventArgs e)

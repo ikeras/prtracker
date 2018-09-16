@@ -1,19 +1,14 @@
-﻿using System.Windows;
-using GalaSoft.MvvmLight.Ioc;
-using Hardcodet.Wpf.TaskbarNotification;
-using PRTrackerUI.ViewServices;
+﻿using Hardcodet.Wpf.TaskbarNotification;
 
-namespace PRTrackerUI
+namespace PRTrackerUI.ViewServices
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window, INotificationService
+    public class NotificationService : INotificationService
     {
-        public MainWindow()
+        private readonly TaskbarIcon taskBarIcon;
+
+        public NotificationService(TaskbarIcon taskBarIcon)
         {
-            this.InitializeComponent();
-            SimpleIoc.Default.Register<INotificationService>(() => this);
+            this.taskBarIcon = taskBarIcon;
         }
 
         public void ShowNotification(string title, string message, NotificationType notificationType)
@@ -39,7 +34,7 @@ namespace PRTrackerUI
                     break;
             }
 
-            this.prTrackerTaskBarIcon.ShowBalloonTip(title, message, balloonIcon);
+            this.taskBarIcon.ShowBalloonTip(title, message, balloonIcon);
         }
     }
 }
