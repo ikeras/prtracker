@@ -6,7 +6,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:tb="http://www.hardcodet.net/taskbar"
         xmlns:Command="http://www.galasoft.ch/mvvmlight"
-        DataContext="{Binding Main, Source={StaticResource Locator}}"
+        DataContext="{Binding TrackerTaskTrayIcon, Source={StaticResource Locator}}"
         mc:Ignorable="d"
         Title="MainWindow" 
         Height="0" 

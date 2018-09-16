@@ -15,12 +15,12 @@ namespace PRTrackerUI.ViewModel
             ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
 
             SimpleIoc.Default.Register<IConnectionService, ConnectionService>();
-            SimpleIoc.Default.Register<MainViewModel>();
+            SimpleIoc.Default.Register<TrackerTaskTrayIconViewModel>();
         }
 
-        public MainViewModel Main
+        public TrackerTaskTrayIconViewModel TrackerTaskTrayIcon
         {
-            get => ServiceLocator.Current.GetInstance<MainViewModel>();
+            get => ServiceLocator.Current.GetInstance<TrackerTaskTrayIconViewModel>();
         }
 
         public static void Cleanup()

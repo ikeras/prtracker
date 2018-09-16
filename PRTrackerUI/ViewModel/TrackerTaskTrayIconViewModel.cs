@@ -21,7 +21,7 @@ using PRTrackerUI.ViewServices;
 
 namespace PRTrackerUI.ViewModel
 {
-    public class MainViewModel : ViewModelBase
+    public class TrackerTaskTrayIconViewModel : ViewModelBase
     {
         private TrackerConfig config;
         private string iconSource;
@@ -30,7 +30,7 @@ namespace PRTrackerUI.ViewModel
         private TrackerPullRequest selectedPullRequest;
         private DispatcherTimer timer;
 
-        public MainViewModel()
+        public TrackerTaskTrayIconViewModel()
         {
             this.iconSource = IconSources.Default;
             this.IsUpdating = false;
@@ -126,9 +126,9 @@ namespace PRTrackerUI.ViewModel
             return await Task.Run(() =>
             {
                 IConfigurationRoot configuration =
-                new ConfigurationBuilder().
-                AddJsonFile("config.json").
-                Build();
+                    new ConfigurationBuilder().
+                    AddJsonFile("config.json").
+                    Build();
 
                 TrackerConfig trackerConfig = new TrackerConfig();
                 configuration.Bind(trackerConfig);
