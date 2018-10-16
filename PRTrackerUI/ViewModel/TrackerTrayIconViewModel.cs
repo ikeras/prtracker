@@ -74,10 +74,14 @@ namespace PRTrackerUI.ViewModel
         {
             // Handle errors
             TrackerPullRequest pullRequest = this.SelectedPullRequest;
-            string reviewToolName = pullRequest.Query.ReviewTool ?? this.config.DefaultReviewTool;
-            TrackerReviewTool reviewTool = this.config.ReviewTools.FirstOrDefault((tool) => reviewToolName == tool.Name);
 
-            reviewTool.Launch(pullRequest.Query.AccountName, pullRequest.Query.Project, pullRequest.Query.RepoId, pullRequest.ID);
+            if (pullRequest != null)
+            {
+                string reviewToolName = pullRequest.Query.ReviewTool ?? this.config.DefaultReviewTool;
+                TrackerReviewTool reviewTool = this.config.ReviewTools.FirstOrDefault((tool) => reviewToolName == tool.Name);
+
+                reviewTool.Launch(pullRequest.Query.AccountName, pullRequest.Query.Project, pullRequest.Query.RepoId, pullRequest.ID);
+            }
         }
 
         private Func<string, Task<BitmapImage>> GetDownloadAvatarImageAsync(IPullRequestServices pullRequestServices)
