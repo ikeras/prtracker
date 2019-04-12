@@ -73,7 +73,7 @@ namespace PRServicesClient.Services
 
         private static string FormatBasicAuthHeader(NetworkCredential credential)
         {
-            string authHeader = string.Empty;
+            string authHeader;
 
             if (!string.IsNullOrEmpty(credential.Domain))
             {
