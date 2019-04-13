@@ -180,10 +180,10 @@ namespace PRTrackerUI.ViewModel
                 {
                     IPullRequestServices prServices = await connectionService.InitializePullRequestServicesAsync(query.AccountName, query.PersonalAccessToken, query.Project, query.RepoId);
 
-                    IEnumerable<ITrackerPullRequest> prs = await prServices.GetPullRequestsAsync(TrackerPullRequestStatus.Closed, query.UniqueUserId);
+                    IEnumerable<IPullRequest> prs = await prServices.GetPullRequestsAsync(PullRequestState.Closed, query.UniqueUserId);
                     AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(prServices));
 
-                    foreach (ITrackerPullRequest pullRequest in prs)
+                    foreach (IPullRequest pullRequest in prs)
                     {
                         trackerPullRequests.Add(new TrackerPullRequest(pullRequest, avatarCache, asyncCache, query));
                     }

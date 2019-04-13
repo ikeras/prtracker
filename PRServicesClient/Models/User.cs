@@ -2,9 +2,9 @@
 
 namespace PRServicesClient.Models
 {
-    internal class TrackerIdentity : ITrackerIdentity
+    internal class User : IUser
     {
-        public TrackerIdentity(string avatarImageUrl, string displayName)
+        public User(string avatarImageUrl, string displayName)
         {
             this.AvatarImageUrl = avatarImageUrl;
             this.DisplayName = displayName;

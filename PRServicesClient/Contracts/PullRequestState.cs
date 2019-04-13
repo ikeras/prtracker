@@ -1,6 +1,6 @@
 ﻿namespace PRServicesClient.Contracts
 {
-    public enum TrackerPullRequestStatus
+    public enum PullRequestState
     {
         All,
         Closed,

@@ -95,14 +95,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\HttpHeaders.cs" />
-    <Compile Include="Contracts\ITrackerIdentity.cs" />
-    <Compile Include="Contracts\ITrackerIdentityWithVote.cs" />
-    <Compile Include="Contracts\ITrackerPullRequest.cs" />
-    <Compile Include="Contracts\TrackerPullRequestStatus.cs" />
-    <Compile Include="Contracts\TrackerVote.cs" />
-    <Compile Include="Models\TrackerIdentity.cs" />
-    <Compile Include="Models\TrackerIdentityWithVote.cs" />
-    <Compile Include="Models\TrackerPullRequest.cs" />
+    <Compile Include="Contracts\IUser.cs" />
+    <Compile Include="Contracts\IUserWithVote.cs" />
+    <Compile Include="Contracts\IPullRequest.cs" />
+    <Compile Include="Contracts\PullRequestState.cs" />
+    <Compile Include="Contracts\PullRequestVote.cs" />
+    <Compile Include="Models\User.cs" />
+    <Compile Include="Models\UserWithVote.cs" />
+    <Compile Include="Models\PullRequest.cs" />
     <Compile Include="Services\ClientContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ConnectionService.cs" />

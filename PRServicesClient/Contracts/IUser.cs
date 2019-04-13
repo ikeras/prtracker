@@ -1,6 +1,6 @@
 ﻿namespace PRServicesClient.Contracts
 {
-    public interface ITrackerIdentity
+    public interface IUser
     {
         string AvatarImageUrl { get; }
 

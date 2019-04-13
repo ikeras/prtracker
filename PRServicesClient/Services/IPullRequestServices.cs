@@ -9,7 +9,7 @@ namespace PRServicesClient.Services
     {
         Task<Stream> DownloadAvatarAsync(string url);
 
-        Task<IEnumerable<ITrackerPullRequest>> GetPullRequestsAsync(TrackerPullRequestStatus status, string userUniqueId = null);
+        Task<IEnumerable<IPullRequest>> GetPullRequestsAsync(PullRequestState status, string userUniqueId = null);
 
         Task<string> GetUrlForBranchRef(string repoId);
     }

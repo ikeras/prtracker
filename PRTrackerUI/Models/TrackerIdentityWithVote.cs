@@ -8,9 +8,9 @@ namespace PRTrackerUI.Models
 {
     public class TrackerIdentityWithVote : TrackerIdentity
     {
-        private readonly ITrackerIdentityWithVote identityWithVote;
+        private readonly IUserWithVote identityWithVote;
 
-        public TrackerIdentityWithVote(ITrackerIdentityWithVote identityWithVote, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, ConcurrentDictionary<string, BitmapImage> avatarCache)
+        public TrackerIdentityWithVote(IUserWithVote identityWithVote, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, ConcurrentDictionary<string, BitmapImage> avatarCache)
             : base(identityWithVote, avatarDownloadAsyncCache, avatarCache)
         {
             this.identityWithVote = identityWithVote;
@@ -24,13 +24,13 @@ namespace PRTrackerUI.Models
 
                 switch (this.identityWithVote.Vote)
                 {
-                    case TrackerVote.Approved:
+                    case PullRequestVote.Approved:
                         brush = Brushes.Green;
                         break;
-                    case TrackerVote.ChangesRequested:
+                    case PullRequestVote.ChangesRequested:
                         brush = Brushes.Orange;
                         break;
-                    case TrackerVote.Rejected:
+                    case PullRequestVote.Rejected:
                         brush = Brushes.Red;
                         break;
                 }
@@ -39,7 +39,7 @@ namespace PRTrackerUI.Models
             }
         }
 
-        public bool IsOverlayVisible { get => this.identityWithVote.Vote != TrackerVote.None; }
+        public bool IsOverlayVisible { get => this.identityWithVote.Vote != PullRequestVote.None; }
 
         public string OverlayText
         {
@@ -49,13 +49,13 @@ namespace PRTrackerUI.Models
 
                 switch (this.identityWithVote.Vote)
                 {
-                    case TrackerVote.Approved:
+                    case PullRequestVote.Approved:
                         text = "\uea12";
                         break;
-                    case TrackerVote.ChangesRequested:
+                    case PullRequestVote.ChangesRequested:
                         text = "\uea15";
                         break;
-                    case TrackerVote.Rejected:
+                    case PullRequestVote.Rejected:
                         text = "\uea04";
                         break;
                 }

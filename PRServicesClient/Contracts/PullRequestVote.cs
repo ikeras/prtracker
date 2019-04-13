@@ -1,6 +1,6 @@
 ﻿namespace PRServicesClient.Contracts
 {
-    public enum TrackerVote
+    public enum PullRequestVote
     {
         Approved,
 

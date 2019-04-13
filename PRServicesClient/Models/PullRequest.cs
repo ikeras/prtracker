@@ -4,16 +4,16 @@ using PRServicesClient.Contracts;
 
 namespace PRServicesClient.Models
 {
-    internal class TrackerPullRequest : ITrackerPullRequest
+    internal class PullRequest : IPullRequest
     {
         private readonly DateTime changedStateDate;
 
-        public TrackerPullRequest(
+        public PullRequest(
             DateTime changedStateDate,
-            ITrackerIdentity createdBy,
+            IUser createdBy,
             int id,
-            IEnumerable<ITrackerIdentityWithVote> reviewers,
-            TrackerPullRequestStatus status,
+            IEnumerable<IUserWithVote> reviewers,
+            PullRequestState status,
             string baseRef,
             string title,
             string url)
@@ -30,7 +30,7 @@ namespace PRServicesClient.Models
 
         public string BaseRef { get; }
 
-        public ITrackerIdentity CreatedBy { get; }
+        public IUser CreatedBy { get; }
 
         public string FormattedDate
         {
@@ -45,9 +45,9 @@ namespace PRServicesClient.Models
 
         public int ID { get; }
 
-        public IEnumerable<ITrackerIdentityWithVote> Reviewers { get; }
+        public IEnumerable<IUserWithVote> Reviewers { get; }
 
-        public TrackerPullRequestStatus Status { get; }
+        public PullRequestState Status { get; }
 
         public string Title { get; }
 

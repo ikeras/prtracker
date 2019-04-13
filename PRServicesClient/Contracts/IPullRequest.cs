@@ -2,17 +2,17 @@
 
 namespace PRServicesClient.Contracts
 {
-    public interface ITrackerPullRequest
+    public interface IPullRequest
     {
-        ITrackerIdentity CreatedBy { get; }
+        IUser CreatedBy { get; }
 
         string FormattedDate { get; }
 
         int ID { get; }
 
-        IEnumerable<ITrackerIdentityWithVote> Reviewers { get; }
+        IEnumerable<IUserWithVote> Reviewers { get; }
 
-        TrackerPullRequestStatus Status { get; }
+        PullRequestState Status { get; }
 
         string BaseRef { get; }
 

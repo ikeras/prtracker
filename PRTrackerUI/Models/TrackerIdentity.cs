@@ -11,9 +11,9 @@ namespace PRTrackerUI.Models
     {
         private readonly AsyncCache<string, BitmapImage> avatarDownloadAsyncCache;
         private readonly ConcurrentDictionary<string, BitmapImage> avatarCache;
-        private readonly ITrackerIdentity identity;
+        private readonly IUser identity;
 
-        public TrackerIdentity(ITrackerIdentity identity, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, ConcurrentDictionary<string, BitmapImage> avatarCache)
+        public TrackerIdentity(IUser identity, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, ConcurrentDictionary<string, BitmapImage> avatarCache)
         {
             this.identity = identity;
             this.avatarDownloadAsyncCache = avatarDownloadAsyncCache;

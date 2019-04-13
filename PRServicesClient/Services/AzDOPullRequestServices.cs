@@ -47,7 +47,7 @@ namespace PRServicesClient.Services
             return responseStream;
         }
 
-        public async Task<IEnumerable<ITrackerPullRequest>> GetPullRequestsAsync(TrackerPullRequestStatus status, string userUniqueId = null)
+        public async Task<IEnumerable<IPullRequest>> GetPullRequestsAsync(PullRequestState status, string userUniqueId = null)
         {
             IEnumerable<GitPullRequest> pullRequests = await this.client.GetPullRequestsByProjectAsync(this.project, new GitPullRequestSearchCriteria() { RepositoryId = this.repo.Id, Status = AzDOPullRequestServices.ConvertToAzDOStatus(status) });
 
@@ -62,15 +62,15 @@ namespace PRServicesClient.Services
                 });
             }
 
-            List<ITrackerPullRequest> trackerPullRequests = new List<ITrackerPullRequest>();
+            List<IPullRequest> trackerPullRequests = new List<IPullRequest>();
 
             foreach (GitPullRequest pullRequest in pullRequests)
             {
                 DateTime changedStateDate = pullRequest.Status == PullRequestStatus.Completed || pullRequest.Status == PullRequestStatus.Abandoned ? pullRequest.ClosedDate : pullRequest.CreationDate;
-                TrackerIdentity createdBy = new TrackerIdentity(pullRequest.CreatedBy.ImageUrl, pullRequest.CreatedBy.DisplayName);
-                IEnumerable<ITrackerIdentityWithVote> reviewers = pullRequest.Reviewers.Select(reviewer => new TrackerIdentityWithVote(reviewer.ImageUrl, reviewer.DisplayName, AzDOPullRequestServices.ConvertToTrackerVote(reviewer.Vote)));
+                User createdBy = new User(pullRequest.CreatedBy.ImageUrl, pullRequest.CreatedBy.DisplayName);
+                IEnumerable<IUserWithVote> reviewers = pullRequest.Reviewers.Select(reviewer => new UserWithVote(reviewer.ImageUrl, reviewer.DisplayName, AzDOPullRequestServices.ConvertToTrackerVote(reviewer.Vote)));
 
-                TrackerPullRequest trackerPullRequest = new TrackerPullRequest(
+                PullRequest trackerPullRequest = new PullRequest(
                     changedStateDate,
                     createdBy,
                     pullRequest.PullRequestId,
@@ -93,19 +93,19 @@ namespace PRServicesClient.Services
             return gitRefs.Where((gitRef) => gitRef.Name == refName).FirstOrDefault()?.Url;
         }
 
-        private static PullRequestStatus? ConvertToAzDOStatus(TrackerPullRequestStatus status)
+        private static PullRequestStatus? ConvertToAzDOStatus(PullRequestState status)
         {
             PullRequestStatus? azDOStatus = null;
 
             switch (status)
             {
-                case TrackerPullRequestStatus.All:
+                case PullRequestState.All:
                     azDOStatus = PullRequestStatus.All;
                     break;
-                case TrackerPullRequestStatus.Closed:
+                case PullRequestState.Closed:
                     azDOStatus = PullRequestStatus.Completed;
                     break;
-                case TrackerPullRequestStatus.Open:
+                case PullRequestState.Open:
                     azDOStatus = PullRequestStatus.Active;
                     break;
             }
@@ -113,43 +113,43 @@ namespace PRServicesClient.Services
             return azDOStatus;
         }
 
-        private static TrackerPullRequestStatus ConvertToTrackerStatus(PullRequestStatus status)
+        private static PullRequestState ConvertToTrackerStatus(PullRequestStatus status)
         {
-            TrackerPullRequestStatus trackerStatus = TrackerPullRequestStatus.Open;
+            PullRequestState trackerStatus = PullRequestState.Open;
 
             switch (status)
             {
                 case PullRequestStatus.NotSet:
                 case PullRequestStatus.Active:
-                    trackerStatus = TrackerPullRequestStatus.Open;
+                    trackerStatus = PullRequestState.Open;
                     break;
                 case PullRequestStatus.Abandoned:
                 case PullRequestStatus.Completed:
-                    trackerStatus = TrackerPullRequestStatus.Closed;
+                    trackerStatus = PullRequestState.Closed;
                     break;
                 case PullRequestStatus.All:
-                    trackerStatus = TrackerPullRequestStatus.All;
+                    trackerStatus = PullRequestState.All;
                     break;
             }
 
             return trackerStatus;
         }
 
-        private static TrackerVote ConvertToTrackerVote(short vote)
+        private static PullRequestVote ConvertToTrackerVote(short vote)
         {
-            TrackerVote trackerVote = TrackerVote.None;
+            PullRequestVote trackerVote = PullRequestVote.None;
 
             if (vote > 0)
             {
-                trackerVote = TrackerVote.Approved;
+                trackerVote = PullRequestVote.Approved;
             }
             else if (vote == -5)
             {
-                trackerVote = TrackerVote.ChangesRequested;
+                trackerVote = PullRequestVote.ChangesRequested;
             }
             else if (vote == -10)
             {
-                trackerVote = TrackerVote.Rejected;
+                trackerVote = PullRequestVote.Rejected;
             }
 
             return trackerVote;
