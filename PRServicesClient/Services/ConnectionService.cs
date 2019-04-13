@@ -18,7 +18,7 @@ namespace PRServicesClient.Services
             GitHttpClient client = connection.GetClient<GitHttpClient>();
             GitRepository repo = await client.GetRepositoryAsync(project, repoId);
 
-            return new PullRequestServices(clientContext, client, project, repo);
+            return new AzDOPullRequestServices(clientContext, client, project, repo);
         }
     }
 }

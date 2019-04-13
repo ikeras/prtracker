@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.TeamFoundation.SourceControl.WebApi;
+using PRServicesClient.Contracts;
 
 namespace PRServicesClient.Services
 {
@@ -9,7 +9,7 @@ namespace PRServicesClient.Services
     {
         Task<Stream> DownloadAvatarAsync(string url);
 
-        Task<IEnumerable<GitPullRequest>> GetPullRequestsAsync(PullRequestStatus status, string userUniqueId = null);
+        Task<IEnumerable<ITrackerPullRequest>> GetPullRequestsAsync(TrackerPullRequestStatus status, string userUniqueId = null);
 
         Task<string> GetUrlForBranchRef(string repoId);
     }

@@ -1,19 +1,19 @@
 ﻿using System.Collections.Concurrent;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Microsoft.TeamFoundation.SourceControl.WebApi;
+using PRServicesClient.Contracts;
 using PRTrackerUI.Common;
 
 namespace PRTrackerUI.Models
 {
     public class TrackerIdentityWithVote : TrackerIdentity
     {
-        private readonly IdentityRefWithVote identityRefWithVote;
+        private readonly ITrackerIdentityWithVote identityWithVote;
 
-        public TrackerIdentityWithVote(IdentityRefWithVote identityRefWithVote, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, ConcurrentDictionary<string, BitmapImage> avatarCache)
-            : base(identityRefWithVote, avatarDownloadAsyncCache, avatarCache)
+        public TrackerIdentityWithVote(ITrackerIdentityWithVote identityWithVote, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, ConcurrentDictionary<string, BitmapImage> avatarCache)
+            : base(identityWithVote, avatarDownloadAsyncCache, avatarCache)
         {
-            this.identityRefWithVote = identityRefWithVote;
+            this.identityWithVote = identityWithVote;
         }
 
         public Brush Brush
@@ -22,24 +22,24 @@ namespace PRTrackerUI.Models
             {
                 Brush brush = null;
 
-                if (this.identityRefWithVote.Vote > 0)
+                switch (this.identityWithVote.Vote)
                 {
-                    brush = Brushes.Green;
-                }
-                else if (this.identityRefWithVote.Vote == -5)
-                {
-                    brush = Brushes.Orange;
-                }
-                else if (this.identityRefWithVote.Vote == -10)
-                {
-                    brush = Brushes.Red;
+                    case TrackerVote.Approved:
+                        brush = Brushes.Green;
+                        break;
+                    case TrackerVote.ChangesRequested:
+                        brush = Brushes.Orange;
+                        break;
+                    case TrackerVote.Rejected:
+                        brush = Brushes.Red;
+                        break;
                 }
 
                 return brush;
             }
         }
 
-        public bool IsOverlayVisible { get => this.identityRefWithVote.Vote != 0; }
+        public bool IsOverlayVisible { get => this.identityWithVote.Vote != TrackerVote.None; }
 
         public string OverlayText
         {
@@ -47,17 +47,17 @@ namespace PRTrackerUI.Models
             {
                 string text = string.Empty;
 
-                if (this.identityRefWithVote.Vote > 0)
+                switch (this.identityWithVote.Vote)
                 {
-                    text = "\uea12";
-                }
-                else if (this.identityRefWithVote.Vote == -5)
-                {
-                    text = "\uea15";
-                }
-                else if (this.identityRefWithVote.Vote == -10)
-                {
-                    text = "\uea04";
+                    case TrackerVote.Approved:
+                        text = "\uea12";
+                        break;
+                    case TrackerVote.ChangesRequested:
+                        text = "\uea15";
+                        break;
+                    case TrackerVote.Rejected:
+                        text = "\uea04";
+                        break;
                 }
 
                 return text;

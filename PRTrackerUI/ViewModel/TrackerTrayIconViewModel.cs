@@ -13,7 +13,7 @@ using CommonServiceLocator;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using Microsoft.Extensions.Configuration;
-using Microsoft.TeamFoundation.SourceControl.WebApi;
+using PRServicesClient.Contracts;
 using PRServicesClient.Services;
 using PRTrackerUI.Common;
 using PRTrackerUI.Models;
@@ -180,10 +180,10 @@ namespace PRTrackerUI.ViewModel
                 {
                     IPullRequestServices prServices = await connectionService.InitializePullRequestServicesAsync(query.AccountName, query.PersonalAccessToken, query.Project, query.RepoId);
 
-                    IEnumerable<GitPullRequest> prs = await prServices.GetPullRequestsAsync(PullRequestStatus.Active, query.UniqueUserId);
+                    IEnumerable<ITrackerPullRequest> prs = await prServices.GetPullRequestsAsync(TrackerPullRequestStatus.Closed, query.UniqueUserId);
                     AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(prServices));
 
-                    foreach (GitPullRequest pullRequest in prs)
+                    foreach (ITrackerPullRequest pullRequest in prs)
                     {
                         trackerPullRequests.Add(new TrackerPullRequest(pullRequest, avatarCache, asyncCache, query));
                     }
@@ -192,7 +192,7 @@ namespace PRTrackerUI.ViewModel
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     // We merge the old and new list together, and if the size is larger, that means there are new PRs to review
-                    bool showNotification = this.PullRequests != null ? this.PullRequests.Union(trackerPullRequests, TrackerPullRequestComparer.Default).Count() > this.PullRequests.Count : false;
+                    bool showNotification = this.PullRequests != null ? this.PullRequests.Union(trackerPullRequests, TrackerPullRequestComparer.Default).Count() > this.PullRequests.Count : trackerPullRequests.Count > 0;
                     this.PullRequests = new ObservableCollection<TrackerPullRequest>(trackerPullRequests);
                     this.IconSource = trackerPullRequests.Count > 0 ? IconSources.Action : IconSources.Default;
                     this.IsUpdating = false;
