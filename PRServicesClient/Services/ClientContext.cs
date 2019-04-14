@@ -22,10 +22,13 @@ namespace PRServicesClient.Services
                 throw new ArgumentNullException(nameof(personalAccessToken));
             }
 
+            this.AccountName = accountName;
             this.Url = new Uri(string.Format(AccountUrlPattern, accountName));
             this.PersonalAccessToken = personalAccessToken;
             this.Credentials = new VssBasicCredential("pat", personalAccessToken);
         }
+
+        public string AccountName { get; }
 
         public VssCredentials Credentials { get; }
 

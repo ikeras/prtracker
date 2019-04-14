@@ -1,14 +1,12 @@
 ﻿namespace PRTrackerUI.Models
 {
-    public class TrackerQuery
+    public class TrackerGitHubQuery
     {
-        public string AccountName { get; set; }
-
         public string PersonalAccessToken { get; set; }
 
-        public string Project { get; set; }
+        public string Owner { get; set; }
 
-        public string RepoId { get; set; }
+        public string RepoName { get; set; }
 
         public string ReviewTool { get; set; }
 

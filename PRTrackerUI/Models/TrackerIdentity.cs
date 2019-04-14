@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using GalaSoft.MvvmLight;
-using Microsoft.VisualStudio.Services.WebApi;
+using PRServicesClient.Contracts;
 using PRTrackerUI.Common;
 
 namespace PRTrackerUI.Models
@@ -11,11 +11,11 @@ namespace PRTrackerUI.Models
     {
         private readonly AsyncCache<string, BitmapImage> avatarDownloadAsyncCache;
         private readonly ConcurrentDictionary<string, BitmapImage> avatarCache;
-        private readonly IdentityRef identityRef;
+        private readonly IUser identity;
 
-        public TrackerIdentity(IdentityRef identityRef, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, ConcurrentDictionary<string, BitmapImage> avatarCache)
+        public TrackerIdentity(IUser identity, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, ConcurrentDictionary<string, BitmapImage> avatarCache)
         {
-            this.identityRef = identityRef;
+            this.identity = identity;
             this.avatarDownloadAsyncCache = avatarDownloadAsyncCache;
             this.avatarCache = avatarCache;
         }
@@ -24,7 +24,7 @@ namespace PRTrackerUI.Models
         {
             get
             {
-                string imageUrl = this.identityRef.ImageUrl;
+                string imageUrl = this.identity.AvatarImageUrl;
 
                 if (this.avatarCache.ContainsKey(imageUrl))
                 {
@@ -47,6 +47,6 @@ namespace PRTrackerUI.Models
             }
         }
 
-        public string DisplayName { get => this.identityRef.DisplayName; }
+        public string DisplayName { get => this.identity.DisplayName; }
     }
 }

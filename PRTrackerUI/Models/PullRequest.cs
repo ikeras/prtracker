@@ -14,27 +14,21 @@ namespace PRTrackerUI.Models
         private readonly ConcurrentDictionary<string, BitmapImage> avatarCache;
         private readonly IPullRequest gitPullRequest;
 
-        public TrackerPullRequest(IPullRequest gitPullRequest, ConcurrentDictionary<string, BitmapImage> avatarCache, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, string reviewTool)
+        public TrackerPullRequest(IPullRequest gitPullRequest, ConcurrentDictionary<string, BitmapImage> avatarCache, AsyncCache<string, BitmapImage> avatarDownloadAsyncCache, TrackerQuery query)
         {
             this.gitPullRequest = gitPullRequest;
             this.avatarCache = avatarCache;
             this.avatarDownloadAsyncCache = avatarDownloadAsyncCache;
-            this.ReviewTool = reviewTool;
+            this.Query = query;
         }
-
-        public string AccountName { get => this.gitPullRequest.AccountName; }
 
         public TrackerIdentity CreatedBy { get => new TrackerIdentity(this.gitPullRequest.CreatedBy, this.avatarDownloadAsyncCache, this.avatarCache); }
 
         public string FormattedDate { get => this.gitPullRequest.FormattedDate; }
 
-        public long ID { get => this.gitPullRequest.ID; }
+        public int ID { get => this.gitPullRequest.ID; }
 
-        public string ProjectOrOwner { get => this.gitPullRequest.ProjectOrOwner; }
-
-        public string RepoName { get => this.gitPullRequest.RepoName; }
-
-        public string ReviewTool { get; }
+        public TrackerQuery Query { get; }
 
         public IEnumerable<TrackerIdentityWithVote> Reviewers { get => this.gitPullRequest.Reviewers.Select((reviewer) => new TrackerIdentityWithVote(reviewer, this.avatarDownloadAsyncCache, this.avatarCache)); }
 

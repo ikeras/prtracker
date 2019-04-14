@@ -13,8 +13,8 @@ namespace PRTrackerUI.Models
                 return true;
             }
 
-            return x != null && y != null && x.ID == y.ID && x.Query.AccountName == y.Query.AccountName &&
-                x.Query.Project == y.Query.Project && x.Query.RepoId == y.Query.RepoId;
+            return x != null && y != null && x.ID == y.ID && x.AccountName == y.AccountName &&
+                x.ProjectOrOwner == y.ProjectOrOwner && x.RepoName == y.RepoName;
         }
 
         public int GetHashCode(TrackerPullRequest obj)
@@ -24,9 +24,9 @@ namespace PRTrackerUI.Models
                 int hash = 17;
 
                 hash = (hash * 23) + obj.ID.GetHashCode();
-                hash = (hash * 23) + obj.Query.AccountName.GetHashCode();
-                hash = (hash * 23) + obj.Query.Project.GetHashCode();
-                hash = (hash * 23) + obj.Query.RepoId.GetHashCode();
+                hash = (hash * 23) + obj.AccountName.GetHashCode();
+                hash = (hash * 23) + obj.ProjectOrOwner.GetHashCode();
+                hash = (hash * 23) + obj.RepoName.GetHashCode();
 
                 return hash;
             }

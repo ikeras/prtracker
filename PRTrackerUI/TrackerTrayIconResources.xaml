@@ -14,7 +14,7 @@
     <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverterKey"/>
     <BitmapImage x:Key="PlaceholderImage" UriSource="/PRTrackerUI;component/Images/placeholder.png" />
 
-    <tb:TaskbarIcon x:Key="TrackerTaskBarIcon" DataContext="{Binding TrackerTrayIcon, Source={StaticResource Locator}}" IconSource="{Binding IconSource}" ToolTipText="PR Tracker">
+    <tb:TaskbarIcon x:Key="TrackerTaskBarIcon" DataContext="{Binding TrackerTrayIcon, Source={StaticResource Locator}}" IconSource="{Binding IconSource}">
 
         <tb:TaskbarIcon.ContextMenu>
             <ContextMenu>
