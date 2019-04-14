@@ -78,6 +78,9 @@
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="Octokit, Version=0.32.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Octokit.0.32.0\lib\net45\Octokit.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http.Formatting, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -98,6 +101,7 @@
     <Compile Include="Contracts\IUser.cs" />
     <Compile Include="Contracts\IUserWithVote.cs" />
     <Compile Include="Contracts\IPullRequest.cs" />
+    <Compile Include="Contracts\PullRequestProvider.cs" />
     <Compile Include="Contracts\PullRequestState.cs" />
     <Compile Include="Contracts\PullRequestVote.cs" />
     <Compile Include="Models\User.cs" />
@@ -106,8 +110,9 @@
     <Compile Include="Services\ClientContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ConnectionService.cs" />
+    <Compile Include="Services\GitHubPullRequestServices.cs" />
     <Compile Include="Services\IPullRequestServices.cs" />
-    <Compile Include="Services\AzDOPullRequestServices.cs" />
+    <Compile Include="Services\AzureDevOpsPullRequestServices.cs" />
     <Compile Include="Services\IConnectionService.cs" />
   </ItemGroup>
   <ItemGroup>

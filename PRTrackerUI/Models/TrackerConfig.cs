@@ -6,9 +6,9 @@
 
         public TrackerReviewTool[] ReviewTools { get; set; }
 
-        public string DefaultReviewTool { get; set; }
+        public TrackerAzureDevOps AzureDevOps { get; set; }
 
-        public TrackerQuery[] Queries { get; set; }
+        public TrackerGitHub GitHub { get; set; }
 
         public int UpdateInterval { get; set; }
     }

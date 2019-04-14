@@ -13,14 +13,14 @@ using static System.FormattableString;
 
 namespace PRServicesClient.Services
 {
-    public class AzDOPullRequestServices : IPullRequestServices
+    internal class AzureDevOpsPullRequestServices : IPullRequestServices
     {
         private readonly ClientContext clientContext;
         private readonly GitHttpClient client;
         private readonly string project;
         private readonly GitRepository repo;
 
-        public AzDOPullRequestServices(ClientContext clientContext, GitHttpClient client, string project, GitRepository repo)
+        public AzureDevOpsPullRequestServices(ClientContext clientContext, GitHttpClient client, string project, GitRepository repo)
         {
             this.clientContext = clientContext;
             this.client = client;
@@ -36,7 +36,7 @@ namespace PRServicesClient.Services
             }
 
             WebRequest request = WebRequest.Create(url);
-            request.Headers.Add(HttpHeaders.Authorization, "Basic " + AzDOPullRequestServices.FormatBasicAuthHeader(new NetworkCredential("pat", this.clientContext.PersonalAccessToken)));
+            request.Headers.Add(HttpHeaders.Authorization, "Basic " + AzureDevOpsPullRequestServices.FormatBasicAuthHeader(new NetworkCredential("pat", this.clientContext.PersonalAccessToken)));
 
             // TODO: put timeout here
             request.Timeout = -1;
@@ -49,34 +49,32 @@ namespace PRServicesClient.Services
 
         public async Task<IEnumerable<IPullRequest>> GetPullRequestsAsync(PullRequestState status, string userUniqueId = null)
         {
-            IEnumerable<GitPullRequest> pullRequests = await this.client.GetPullRequestsByProjectAsync(this.project, new GitPullRequestSearchCriteria() { RepositoryId = this.repo.Id, Status = AzDOPullRequestServices.ConvertToAzDOStatus(status) });
-
-            if (!string.IsNullOrEmpty(userUniqueId))
-            {
-                pullRequests = pullRequests.Where((pullRequest) =>
-                {
-                    IdentityRefWithVote identityRefWithVote = pullRequest.Reviewers.FirstOrDefault((identity) => identity.UniqueName == userUniqueId);
-
-                    // Want to include anything that the user hasn't voted for, or where they have voted with waiting or rejected
-                    return identityRefWithVote == null || identityRefWithVote.Vote <= 0;
-                });
-            }
+            IEnumerable<GitPullRequest> pullRequests = await this.client.GetPullRequestsByProjectAsync(this.project, new GitPullRequestSearchCriteria() { RepositoryId = this.repo.Id, Status = AzureDevOpsPullRequestServices.ConvertToAzDOStatus(status) });
 
             List<IPullRequest> trackerPullRequests = new List<IPullRequest>();
 
             foreach (GitPullRequest pullRequest in pullRequests)
             {
+                // Want to exclude anything that the user has approved
+                if (!string.IsNullOrEmpty(userUniqueId) && pullRequest.Reviewers.Any(reviewer => reviewer.UniqueName == userUniqueId && reviewer.Vote > 0))
+                {
+                    continue;
+                }
+
                 DateTime changedStateDate = pullRequest.Status == PullRequestStatus.Completed || pullRequest.Status == PullRequestStatus.Abandoned ? pullRequest.ClosedDate : pullRequest.CreationDate;
                 User createdBy = new User(pullRequest.CreatedBy.ImageUrl, pullRequest.CreatedBy.DisplayName);
-                IEnumerable<IUserWithVote> reviewers = pullRequest.Reviewers.Select(reviewer => new UserWithVote(reviewer.ImageUrl, reviewer.DisplayName, AzDOPullRequestServices.ConvertToTrackerVote(reviewer.Vote)));
+                IEnumerable<IUserWithVote> reviewers = pullRequest.Reviewers.Select(reviewer => new UserWithVote(reviewer.ImageUrl, reviewer.DisplayName, AzureDevOpsPullRequestServices.ConvertToTrackerVote(reviewer.Vote)));
 
                 PullRequest trackerPullRequest = new PullRequest(
+                    this.clientContext.AccountName,
+                    pullRequest.TargetRefName,
                     changedStateDate,
                     createdBy,
                     pullRequest.PullRequestId,
+                    this.project,
+                    this.repo.Name,
                     reviewers,
-                    AzDOPullRequestServices.ConvertToTrackerStatus(pullRequest.Status),
-                    pullRequest.TargetRefName,
+                    AzureDevOpsPullRequestServices.ConvertToTrackerState(pullRequest.Status),
                     pullRequest.Title,
                     pullRequest.Url);
 
@@ -84,13 +82,6 @@ namespace PRServicesClient.Services
             }
 
             return trackerPullRequests;
-        }
-
-        public async Task<string> GetUrlForBranchRef(string refName)
-        {
-            List<GitRef> gitRefs = await this.client.GetBranchRefsAsync(this.repo.Id);
-
-            return gitRefs.Where((gitRef) => gitRef.Name == refName).FirstOrDefault()?.Url;
         }
 
         private static PullRequestStatus? ConvertToAzDOStatus(PullRequestState status)
@@ -113,26 +104,26 @@ namespace PRServicesClient.Services
             return azDOStatus;
         }
 
-        private static PullRequestState ConvertToTrackerStatus(PullRequestStatus status)
+        private static PullRequestState ConvertToTrackerState(PullRequestStatus status)
         {
-            PullRequestState trackerStatus = PullRequestState.Open;
+            PullRequestState trackerState = PullRequestState.Open;
 
             switch (status)
             {
                 case PullRequestStatus.NotSet:
                 case PullRequestStatus.Active:
-                    trackerStatus = PullRequestState.Open;
+                    trackerState = PullRequestState.Open;
                     break;
                 case PullRequestStatus.Abandoned:
                 case PullRequestStatus.Completed:
-                    trackerStatus = PullRequestState.Closed;
+                    trackerState = PullRequestState.Closed;
                     break;
                 case PullRequestStatus.All:
-                    trackerStatus = PullRequestState.All;
+                    trackerState = PullRequestState.All;
                     break;
             }
 
-            return trackerStatus;
+            return trackerState;
         }
 
         private static PullRequestVote ConvertToTrackerVote(short vote)

@@ -77,10 +77,9 @@ namespace PRTrackerUI.ViewModel
 
             if (pullRequest != null)
             {
-                string reviewToolName = pullRequest.Query.ReviewTool ?? this.config.DefaultReviewTool;
-                TrackerReviewTool reviewTool = this.config.ReviewTools.FirstOrDefault((tool) => reviewToolName == tool.Name);
+                TrackerReviewTool reviewTool = this.config.ReviewTools.FirstOrDefault((tool) => pullRequest.ReviewTool == tool.Name);
 
-                reviewTool.Launch(pullRequest.Query.AccountName, pullRequest.Query.Project, pullRequest.Query.RepoId, pullRequest.ID);
+                reviewTool.Launch(pullRequest.AccountName, pullRequest.ProjectOrOwner, pullRequest.RepoName, pullRequest.ID);
             }
         }
 
@@ -90,32 +89,33 @@ namespace PRTrackerUI.ViewModel
             {
                 try
                 {
-                    Stream avatarStream = await pullRequestServices.DownloadAvatarAsync(url);
-
-                    if (avatarStream != null)
+                    using (Stream avatarStream = await pullRequestServices.DownloadAvatarAsync(url))
                     {
-                        BinaryReader reader = new BinaryReader(avatarStream);
-                        MemoryStream memoryStream = new MemoryStream();
-                        BitmapImage avatarImage = new BitmapImage();
-
-                        const int BytesToRead = 8192;
-
-                        byte[] bytebuffer = new byte[BytesToRead];
-                        int bytesRead = reader.Read(bytebuffer, 0, BytesToRead);
-
-                        while (bytesRead > 0)
+                        if (avatarStream != null)
                         {
-                            memoryStream.Write(bytebuffer, 0, bytesRead);
-                            bytesRead = reader.Read(bytebuffer, 0, BytesToRead);
+                            BinaryReader reader = new BinaryReader(avatarStream);
+                            MemoryStream memoryStream = new MemoryStream();
+                            BitmapImage avatarImage = new BitmapImage();
+
+                            const int BytesToRead = 8192;
+
+                            byte[] bytebuffer = new byte[BytesToRead];
+                            int bytesRead = reader.Read(bytebuffer, 0, BytesToRead);
+
+                            while (bytesRead > 0)
+                            {
+                                memoryStream.Write(bytebuffer, 0, bytesRead);
+                                bytesRead = reader.Read(bytebuffer, 0, BytesToRead);
+                            }
+
+                            avatarImage.BeginInit();
+                            memoryStream.Seek(0, SeekOrigin.Begin);
+
+                            avatarImage.StreamSource = memoryStream;
+                            avatarImage.EndInit();
+
+                            return avatarImage;
                         }
-
-                        avatarImage.BeginInit();
-                        memoryStream.Seek(0, SeekOrigin.Begin);
-
-                        avatarImage.StreamSource = memoryStream;
-                        avatarImage.EndInit();
-
-                        return avatarImage;
                     }
                 }
                 catch (Exception ex)
@@ -176,16 +176,38 @@ namespace PRTrackerUI.ViewModel
 
                 ConcurrentDictionary<string, BitmapImage> avatarCache = new ConcurrentDictionary<string, BitmapImage>();
 
-                foreach (TrackerQuery query in this.config.Queries)
+                foreach (TrackerAzureDevOpsQuery query in this.config.AzureDevOps.Queries)
                 {
-                    IPullRequestServices prServices = await connectionService.InitializePullRequestServicesAsync(query.AccountName, query.PersonalAccessToken, query.Project, query.RepoId);
+                    IPullRequestServices prServices = await connectionService.InitializePullRequestServicesAsync(
+                        PullRequestProvider.AzureDevOps,
+                        query.PersonalAccessToken,
+                        query.Project,
+                        query.RepoName,
+                        query.AccountName);
 
                     IEnumerable<IPullRequest> prs = await prServices.GetPullRequestsAsync(PullRequestState.Closed, query.UniqueUserId);
                     AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(prServices));
 
                     foreach (IPullRequest pullRequest in prs)
                     {
-                        trackerPullRequests.Add(new TrackerPullRequest(pullRequest, avatarCache, asyncCache, query));
+                        trackerPullRequests.Add(new TrackerPullRequest(pullRequest, avatarCache, asyncCache, query.ReviewTool ?? this.config.AzureDevOps.DefaultReviewTool));
+                    }
+                }
+
+                foreach (TrackerGitHubQuery query in this.config.GitHub.Queries)
+                {
+                    IPullRequestServices prServices = await connectionService.InitializePullRequestServicesAsync(
+                        PullRequestProvider.GitHub,
+                        query.PersonalAccessToken,
+                        query.Owner,
+                        query.RepoName);
+
+                    IEnumerable<IPullRequest> prs = await prServices.GetPullRequestsAsync(PullRequestState.Closed, query.UniqueUserId);
+                    AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(prServices));
+
+                    foreach (IPullRequest pullRequest in prs)
+                    {
+                        trackerPullRequests.Add(new TrackerPullRequest(pullRequest, avatarCache, asyncCache, query.ReviewTool ?? this.config.GitHub.DefaultReviewTool));
                     }
                 }
 

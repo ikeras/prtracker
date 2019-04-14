@@ -9,24 +9,32 @@ namespace PRServicesClient.Models
         private readonly DateTime changedStateDate;
 
         public PullRequest(
+            string accountName,
+            string baseRef,
             DateTime changedStateDate,
             IUser createdBy,
-            int id,
+            long id,
+            string projectOrOwner,
+            string repoName,
             IEnumerable<IUserWithVote> reviewers,
             PullRequestState status,
-            string baseRef,
             string title,
             string url)
         {
+            this.AccountName = accountName;
+            this.BaseRef = baseRef;
             this.changedStateDate = changedStateDate;
             this.CreatedBy = createdBy;
             this.ID = id;
+            this.ProjectOrOwner = projectOrOwner;
+            this.RepoName = repoName;
             this.Reviewers = reviewers;
             this.Status = status;
-            this.BaseRef = baseRef;
             this.Title = title;
             this.Url = url;
         }
+
+        public string AccountName { get; }
 
         public string BaseRef { get; }
 
@@ -43,7 +51,11 @@ namespace PRServicesClient.Models
             }
         }
 
-        public int ID { get; }
+        public long ID { get; }
+
+        public string ProjectOrOwner { get; }
+
+        public string RepoName { get; }
 
         public IEnumerable<IUserWithVote> Reviewers { get; }
 

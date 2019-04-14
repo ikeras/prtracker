@@ -60,12 +60,15 @@
     </ApplicationDefinition>
     <Compile Include="Common\AsyncCache.cs" />
     <Compile Include="Common\IconSources.cs" />
+    <Compile Include="Models\TrackerAzureDevOps.cs" />
     <Compile Include="Models\TrackerConfig.cs" />
+    <Compile Include="Models\TrackerGitHub.cs" />
+    <Compile Include="Models\TrackerGitHubQuery.cs" />
     <Compile Include="Models\TrackerIdentity.cs" />
     <Compile Include="Models\TrackerIdentityWithVote.cs" />
     <Compile Include="Models\TrackerPullRequest.cs" />
     <Compile Include="Models\TrackerPullRequestComparer.cs" />
-    <Compile Include="Models\TrackerQuery.cs" />
+    <Compile Include="Models\TrackerAzureDevOpsQuery.cs" />
     <Compile Include="Models\TrackerReviewTool.cs" />
     <Compile Include="ViewModel\TrackerTrayIconViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
