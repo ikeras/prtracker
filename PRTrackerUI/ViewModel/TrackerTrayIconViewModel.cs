@@ -185,7 +185,7 @@ namespace PRTrackerUI.ViewModel
                         query.RepoName,
                         query.AccountName);
 
-                    IEnumerable<IPullRequest> prs = await prServices.GetPullRequestsAsync(PullRequestState.Closed, query.UniqueUserId);
+                    IEnumerable<IPullRequest> prs = await prServices.GetPullRequestsAsync(PullRequestState.Open, query.UniqueUserId);
                     AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(prServices));
 
                     foreach (IPullRequest pullRequest in prs)
@@ -202,7 +202,7 @@ namespace PRTrackerUI.ViewModel
                         query.Owner,
                         query.RepoName);
 
-                    IEnumerable<IPullRequest> prs = await prServices.GetPullRequestsAsync(PullRequestState.Closed, query.UniqueUserId);
+                    IEnumerable<IPullRequest> prs = await prServices.GetPullRequestsAsync(PullRequestState.Open, query.UniqueUserId);
                     AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(prServices));
 
                     foreach (IPullRequest pullRequest in prs)
