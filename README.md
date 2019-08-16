@@ -26,26 +26,26 @@ PRTracker expects a config.json to be placed alongside the executable. This conf
     }
   ],
   "azureDevOps": {
-	  "defaultReviewTool": "BrowserAzureDevOps",
-	  "queries": [
-		{
-		  "accountName": "<Azure DevOps account to be accessed>",
-		  "personalAccessToken": "<Azure DevOps PAT with access to this account, project and repo>",
-		  "project": "<Azure DevOps Project>",
-		  "repoName": "<Azure DevOps repo name>",
-		  "reviewTool":  "<optional property that specifes the name of a tool specified in reviewTools, useful to override the defaultReviewTool>",
-		  "uniqueUserId": "<Azure DevOps unique user ID, usually an email - this will cause the tool to omit any PRs that have been approved by this user>"
-		}
-	},
-	"gitHub": {
-		"defaultReviewTool": "BrowserGitHub",
+		"defaultReviewTool": "BrowserAzureDevOps",
 		"queries": [
-		  {
-			"personalAccessToken": "<GitHub PAT with access to this repo>",
-			"owner": "<GitHub owner/organization>",
-			"repoName": "<GitHub repo name>",
-			"uniqueUserId": "<GitHub user name>"
-		  }
+			{
+				"accountName": "<Azure DevOps account to be accessed>",
+				"personalAccessToken": "<Azure DevOps PAT with access to this account, project and repo>",
+				"project": "<Azure DevOps Project>",
+				"repoName": "<Azure DevOps repo name>",
+				"reviewTool":  "<optional property that specifes the name of a tool specified in reviewTools, useful to override the defaultReviewTool>",
+				"uniqueUserId": "<Azure DevOps unique user ID, usually an email - this will cause the tool to omit any PRs that have been approved by this user>"
+			}
+		},
+  "gitHub": {
+	  "defaultReviewTool": "BrowserGitHub",
+	  "queries": [
+			{
+				"personalAccessToken": "<GitHub PAT with access to this repo>",
+				"owner": "<GitHub owner/organization>",
+				"repoName": "<GitHub repo name>",
+				"uniqueUserId": "<GitHub user name>"
+			}
 		]	
 	}
     "updateInterval": <number of minutes to wait between updates>
