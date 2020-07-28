@@ -109,11 +109,20 @@ dotnet_style_qualification_for_method = true:suggestion
 #prefer properties to be prefaced with this. in C# or Me. in Visual Basic
 dotnet_style_qualification_for_property = true:suggestion
 
+# SA0001: XML comment analysis is disabled due to project configuration
+dotnet_diagnostic.SA1000.severity = none
+
 # SA1200: Using directives should be placed correctly
 dotnet_diagnostic.SA1200.severity = none
 
 # SA1413: Use training comma in multi-line initializers
 dotnet_diagnostic.SA1413.severity = none
+
+# SA1600: Elements should be documented
+dotnet_diagnostic.SA1600.severity = none
+
+# SA1602: Enumeration items should be documented
+dotnet_diagnostic.SA1602.severity = none
 
 # SA1633: File should have header
 dotnet_diagnostic.SA1633.severity = none

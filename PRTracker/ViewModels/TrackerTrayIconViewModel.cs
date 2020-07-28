@@ -89,33 +89,32 @@ namespace PRTracker.ViewModels
             {
                 try
                 {
-                    using (Stream avatarStream = await pullRequestServices.DownloadAvatarAsync(url))
+                    using Stream avatarStream = await pullRequestServices.DownloadAvatarAsync(url);
+
+                    if (avatarStream != null)
                     {
-                        if (avatarStream != null)
+                        BinaryReader reader = new BinaryReader(avatarStream);
+                        MemoryStream memoryStream = new MemoryStream();
+                        BitmapImage avatarImage = new BitmapImage();
+
+                        const int BytesToRead = 8192;
+
+                        byte[] bytebuffer = new byte[BytesToRead];
+                        int bytesRead = reader.Read(bytebuffer, 0, BytesToRead);
+
+                        while (bytesRead > 0)
                         {
-                            BinaryReader reader = new BinaryReader(avatarStream);
-                            MemoryStream memoryStream = new MemoryStream();
-                            BitmapImage avatarImage = new BitmapImage();
-
-                            const int BytesToRead = 8192;
-
-                            byte[] bytebuffer = new byte[BytesToRead];
-                            int bytesRead = reader.Read(bytebuffer, 0, BytesToRead);
-
-                            while (bytesRead > 0)
-                            {
-                                memoryStream.Write(bytebuffer, 0, bytesRead);
-                                bytesRead = reader.Read(bytebuffer, 0, BytesToRead);
-                            }
-
-                            avatarImage.BeginInit();
-                            memoryStream.Seek(0, SeekOrigin.Begin);
-
-                            avatarImage.StreamSource = memoryStream;
-                            avatarImage.EndInit();
-
-                            return avatarImage;
+                            memoryStream.Write(bytebuffer, 0, bytesRead);
+                            bytesRead = reader.Read(bytebuffer, 0, BytesToRead);
                         }
+
+                        avatarImage.BeginInit();
+                        memoryStream.Seek(0, SeekOrigin.Begin);
+
+                        avatarImage.StreamSource = memoryStream;
+                        avatarImage.EndInit();
+
+                        return avatarImage;
                     }
                 }
                 catch (Exception ex)

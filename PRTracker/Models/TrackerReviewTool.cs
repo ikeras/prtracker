@@ -16,8 +16,7 @@ namespace PRTracker.Models
             string commandLine = TrackerReviewTool.FillInPlaceholders(this.CommandLine, accountName, projectOrOwner, repoName, pullRequestId);
             string arguments = this.Arguments != null ? TrackerReviewTool.FillInPlaceholders(this.Arguments, accountName, projectOrOwner, repoName, pullRequestId) : null;
 
-
-            using var browser = new Process();
+            using Process browser = new Process();
             browser.StartInfo.UseShellExecute = true;
             browser.StartInfo.FileName = commandLine;
             browser.StartInfo.Arguments = arguments;

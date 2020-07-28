@@ -13,26 +13,14 @@ namespace PRTracker.ViewServices
 
         public void ShowNotification(string title, string message, NotificationType notificationType)
         {
-            BalloonIcon balloonIcon;
-
-            switch (notificationType)
+            BalloonIcon balloonIcon = notificationType switch
             {
-                case NotificationType.None:
-                    balloonIcon = BalloonIcon.None;
-                    break;
-                case NotificationType.Info:
-                    balloonIcon = BalloonIcon.Info;
-                    break;
-                case NotificationType.Warning:
-                    balloonIcon = BalloonIcon.Warning;
-                    break;
-                case NotificationType.Error:
-                    balloonIcon = BalloonIcon.Error;
-                    break;
-                default:
-                    balloonIcon = BalloonIcon.None;
-                    break;
-            }
+                NotificationType.None => BalloonIcon.None,
+                NotificationType.Info => BalloonIcon.Info,
+                NotificationType.Warning => BalloonIcon.Warning,
+                NotificationType.Error => BalloonIcon.Error,
+                _ => BalloonIcon.None,
+            };
 
             this.taskBarIcon.ShowBalloonTip(title, message, balloonIcon);
         }
