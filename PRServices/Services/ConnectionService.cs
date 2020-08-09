@@ -9,17 +9,6 @@ namespace PRServices.Services
 {
     public class ConnectionService : IConnectionService
     {
-        public static async Task<IPullRequestServices> InitializeAzureDevOpsPRServicesAsync(string personalAccessToken, string project, string repoName, string accountName)
-        {
-            ClientContext clientContext = new ClientContext(accountName, personalAccessToken);
-
-            VssConnection connection = clientContext.Connection;
-            GitHttpClient client = connection.GetClient<GitHttpClient>();
-            GitRepository repo = await client.GetRepositoryAsync(project, repoName);
-
-            return new AzureDevOpsPullRequestServices(clientContext, client, project, repo);
-        }
-
         public static IPullRequestServices InitializeGitHubPRServicesAsync(string personalAccessToken, string owner, string repoName)
         {
             Credentials credentials = new Credentials(personalAccessToken);
@@ -32,6 +21,11 @@ namespace PRServices.Services
             return new GitHubPullRequestServices(client, owner, repoName);
         }
 
+        public IAzureDevOpsPullRequestService InitializeAzureDevOpsService(string personalAccessToken, string project, string accountName)
+        {
+            return new AzureDevOpsPullRequestServices(personalAccessToken, project, accountName);
+        }
+
         public Task<IPullRequestServices> InitializePullRequestServicesAsync(
             PullRequestProvider provider,
             string personalAccessToken,
@@ -41,8 +35,6 @@ namespace PRServices.Services
         {
             switch (provider)
             {
-                case PullRequestProvider.AzureDevOps:
-                    return ConnectionService.InitializeAzureDevOpsPRServicesAsync(personalAccessToken, projectOrOwner, repoName, accountName);
                 case PullRequestProvider.GitHub:
                     return Task.FromResult(ConnectionService.InitializeGitHubPRServicesAsync(personalAccessToken, projectOrOwner, repoName));
             }

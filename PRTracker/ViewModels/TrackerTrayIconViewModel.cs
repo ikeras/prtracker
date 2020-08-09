@@ -83,13 +83,13 @@ namespace PRTracker.ViewModels
             }
         }
 
-        private Func<string, Task<BitmapImage>> GetDownloadAvatarImageAsync(IPullRequestServices pullRequestServices)
+        private Func<string, Task<BitmapImage>> GetDownloadAvatarImageAsync(Func<string, Task<Stream>> downloadAvatarAsync)
         {
             return async url =>
             {
                 try
                 {
-                    using Stream avatarStream = await pullRequestServices.DownloadAvatarAsync(url);
+                    using Stream avatarStream = await downloadAvatarAsync(url);
 
                     if (avatarStream != null)
                     {
@@ -177,15 +177,26 @@ namespace PRTracker.ViewModels
 
                 foreach (TrackerAzureDevOpsQuery query in this.config.AzureDevOps.Queries)
                 {
-                    IPullRequestServices prServices = await connectionService.InitializePullRequestServicesAsync(
-                        PullRequestProvider.AzureDevOps,
+                    IAzureDevOpsPullRequestService adoPRService = connectionService.InitializeAzureDevOpsService(
                         query.PersonalAccessToken,
                         query.Project,
-                        query.RepoName,
                         query.AccountName);
 
-                    IEnumerable<IPullRequest> prs = await prServices.GetPullRequestsAsync(PullRequestState.Open, query.UniqueUserId);
-                    AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(prServices));
+                    AzureDevOpsQuery adoQuery = new AzureDevOpsQuery
+                    {
+                        IsAssignedToMe = query.FilterToTeams != null ? true : query.IsAssignedToMe,
+                        IsCreatedByMe = query.IsCreatedByMe,
+                        FilterToTeams = query.FilterToTeams,
+                        RepoName = query.RepoName,
+                        SourceRefName = query.SourceRefName,
+                        SourceRepoName = query.SourceRepoName,
+                        Status = query.Status != null ? Enum.Parse<PullRequestState>(query.Status, true) : PullRequestState.Open,
+                        TargetRefName = query.TargetRefName,
+                        UniqueUserIdFilter = query.UniqueUserId
+                    };
+
+                    IEnumerable<IPullRequest> prs = await adoPRService.GetPullRequestsAsync(adoQuery);
+                    AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(adoPRService.DownloadAvatarAsync));
 
                     foreach (IPullRequest pullRequest in prs)
                     {
@@ -202,7 +213,7 @@ namespace PRTracker.ViewModels
                         query.RepoName);
 
                     IEnumerable<IPullRequest> prs = await prServices.GetPullRequestsAsync(PullRequestState.Open, query.UniqueUserId);
-                    AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(prServices));
+                    AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(prServices.DownloadAvatarAsync));
 
                     foreach (IPullRequest pullRequest in prs)
                     {

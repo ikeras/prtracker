@@ -4,8 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
+using Microsoft.VisualStudio.Services.Account;
+using Microsoft.VisualStudio.Services.Account.Client;
 using Microsoft.VisualStudio.Services.Common;
+using Microsoft.VisualStudio.Services.UserMapping;
+using Microsoft.VisualStudio.Services.UserMapping.Client;
+using Microsoft.VisualStudio.Services.WebApi;
 using PRServices.Common;
 using PRServices.Contracts;
 using PRServices.Models;
@@ -13,19 +19,22 @@ using static System.FormattableString;
 
 namespace PRServices.Services
 {
-    internal class AzureDevOpsPullRequestServices : IPullRequestServices
+    internal class AzureDevOpsPullRequestServices : IAzureDevOpsPullRequestService
     {
         private readonly ClientContext clientContext;
-        private readonly GitHttpClient client;
+        private readonly VssConnection connection;
+        private readonly TeamHttpClient teamClient;
+        private readonly GitHttpClient gitClient;
         private readonly string project;
-        private readonly GitRepository repo;
 
-        public AzureDevOpsPullRequestServices(ClientContext clientContext, GitHttpClient client, string project, GitRepository repo)
+        public AzureDevOpsPullRequestServices(string personalAccessToken, string project, string accountName)
         {
-            this.clientContext = clientContext;
-            this.client = client;
+            this.clientContext = new ClientContext(accountName, personalAccessToken);
+
+            this.connection = this.clientContext.Connection;
+            this.teamClient = this.connection.GetClient<TeamHttpClient>();
+            this.gitClient = this.connection.GetClient<GitHttpClient>();
             this.project = project;
-            this.repo = repo;
         }
 
         public async Task<Stream> DownloadAvatarAsync(string url)
@@ -47,16 +56,25 @@ namespace PRServices.Services
             return responseStream;
         }
 
-        public async Task<IEnumerable<IPullRequest>> GetPullRequestsAsync(PullRequestState status, string userUniqueId = null)
+        public async Task<IEnumerable<IPullRequest>> GetPullRequestsAsync(AzureDevOpsQuery query)
         {
-            IEnumerable<GitPullRequest> pullRequests = await this.client.GetPullRequestsByProjectAsync(this.project, new GitPullRequestSearchCriteria() { RepositoryId = this.repo.Id, Status = AzureDevOpsPullRequestServices.ConvertToAzDOStatus(status) });
+            List<GitPullRequestSearchCriteria> searches = await this.ConvertQueryToSearches(query);
+
+            List<GitPullRequest> pullRequests = new List<GitPullRequest>();
+
+            foreach (GitPullRequestSearchCriteria search in searches)
+            {
+                IEnumerable<GitPullRequest> searchResults = await this.gitClient.GetPullRequestsByProjectAsync(this.project, search);
+                pullRequests.AddRange(searchResults);
+            }
 
             List<IPullRequest> trackerPullRequests = new List<IPullRequest>();
 
             foreach (GitPullRequest pullRequest in pullRequests)
             {
-                // Want to exclude anything that the user has approved
-                if (!string.IsNullOrEmpty(userUniqueId) && pullRequest.Reviewers.Any(reviewer => reviewer.UniqueName == userUniqueId && reviewer.Vote > 0))
+                // Want to exclude anything that the user has approved or exclude drafts if not requested
+                if ((!string.IsNullOrEmpty(query.UniqueUserIdFilter) && pullRequest.Reviewers.Any(reviewer => reviewer.UniqueName == query.UniqueUserIdFilter && reviewer.Vote > 0)) ||
+                    (!query.IncludeDrafts && pullRequest.IsDraft.HasValue && pullRequest.IsDraft.Value))
                 {
                     continue;
                 }
@@ -72,7 +90,7 @@ namespace PRServices.Services
                     createdBy,
                     pullRequest.PullRequestId,
                     this.project,
-                    this.repo.Name,
+                    pullRequest.Repository.Name,
                     reviewers,
                     AzureDevOpsPullRequestServices.ConvertToTrackerState(pullRequest.Status),
                     pullRequest.Title,
@@ -82,6 +100,65 @@ namespace PRServices.Services
             }
 
             return trackerPullRequests;
+        }
+
+        private async Task<List<GitPullRequestSearchCriteria>> ConvertQueryToSearches(AzureDevOpsQuery query)
+        {
+            List<GitPullRequestSearchCriteria> searches = new List<GitPullRequestSearchCriteria>();
+
+            if (query.IsAssignedToMe)
+            {
+                List<WebApiTeam> teams = await this.teamClient.GetAllTeamsAsync(true);
+
+                if (query.FilterToTeams != null)
+                {
+                    teams = teams.Where(team => query.FilterToTeams.Contains(team.Name)).ToList();
+                }
+
+                foreach (WebApiTeam team in teams)
+                {
+                    GitPullRequestSearchCriteria teamSearchCriteria = new GitPullRequestSearchCriteria
+                    {
+                        CreatorId = query.IsCreatedByMe ? this.connection.AuthorizedIdentity.Id : (Guid?)null,
+                        RepositoryId = await this.RepoNameToRepoId(query.RepoName),
+                        ReviewerId = team.Id,
+                        SourceRefName = query.SourceRefName,
+                        SourceRepositoryId = await this.RepoNameToRepoId(query.SourceRepoName),
+                        Status = AzureDevOpsPullRequestServices.ConvertToAzDOStatus(query.Status),
+                        TargetRefName = query.TargetRefName
+                    };
+
+                    searches.Add(teamSearchCriteria);
+                }
+            }
+
+            GitPullRequestSearchCriteria searchCriteria = new GitPullRequestSearchCriteria
+            {
+                CreatorId = query.IsCreatedByMe ? this.connection.AuthorizedIdentity.Id : (Guid?)null,
+                RepositoryId = await this.RepoNameToRepoId(query.RepoName),
+                ReviewerId = query.IsAssignedToMe ? this.connection.AuthorizedIdentity.Id : (Guid?)null,
+                SourceRefName = query.SourceRefName,
+                SourceRepositoryId = await this.RepoNameToRepoId(query.SourceRepoName),
+                Status = AzureDevOpsPullRequestServices.ConvertToAzDOStatus(query.Status),
+                TargetRefName = query.TargetRefName
+            };
+
+            searches.Add(searchCriteria);
+
+            return searches;
+        }
+
+        private async Task<Guid?> RepoNameToRepoId(string repoName)
+        {
+            Guid? repositoryId = null;
+
+            if (!string.IsNullOrWhiteSpace(repoName))
+            {
+                GitRepository repo = await this.gitClient.GetRepositoryAsync(this.project, repoName);
+                repositoryId = repo.Id;
+            }
+
+            return repositoryId;
         }
 
         private static PullRequestStatus? ConvertToAzDOStatus(PullRequestState status)
