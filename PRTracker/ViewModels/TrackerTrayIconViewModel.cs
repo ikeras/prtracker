@@ -79,7 +79,7 @@ namespace PRTracker.ViewModels
             {
                 TrackerReviewTool reviewTool = this.config.ReviewTools.FirstOrDefault((tool) => pullRequest.ReviewTool == tool.Name);
 
-                reviewTool.Launch(pullRequest.AccountName, pullRequest.ProjectOrOwner, pullRequest.RepoName, pullRequest.ID);
+                reviewTool.Launch(pullRequest.AccountName, pullRequest.ProjectOrOwner, pullRequest.RepoName, pullRequest.ID, pullRequest.Url);
             }
         }
 
@@ -206,14 +206,21 @@ namespace PRTracker.ViewModels
 
                 foreach (TrackerGitHubQuery query in this.config.GitHub.Queries)
                 {
-                    IPullRequestServices prServices = await connectionService.InitializePullRequestServicesAsync(
-                        PullRequestProvider.GitHub,
-                        query.PersonalAccessToken,
-                        query.Owner,
-                        query.RepoName);
+                    IGitHubPullRequestService gitHubPRService = connectionService.InitializeGitHubPRServicesAsync(query.PersonalAccessToken);
 
-                    IEnumerable<IPullRequest> prs = await prServices.GetPullRequestsAsync(PullRequestState.Open, query.UniqueUserId);
-                    AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(prServices.DownloadAvatarAsync));
+                    GitHubQuery gitHubQuery = new GitHubQuery
+                    {
+                        AssginedTo = query.AssginedTo,
+                        Base = query.Base,
+                        CreatedBy = query.CreatedBy,
+                        Head = query.Head,
+                        InvolvedUser = query.InvolvedUser,
+                        Status = query.Status != null ? Enum.Parse<PullRequestState>(query.Status, true) : PullRequestState.Open,
+                        UniqueUserId = query.UniqueUserId
+                    };
+
+                    IEnumerable<IPullRequest> prs = await gitHubPRService.GetPullRequestsAsync(gitHubQuery);
+                    AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(gitHubPRService.DownloadAvatarAsync));
 
                     foreach (IPullRequest pullRequest in prs)
                     {

@@ -12,8 +12,6 @@
 
         public string RepoName { get; set; }
 
-        public string Reviewer { get; set; }
-
         public string SourceRefName { get; set; }
 
         public string SourceRepoName { get; set; }
