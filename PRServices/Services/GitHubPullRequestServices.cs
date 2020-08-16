@@ -8,17 +8,20 @@ using PRServices.Contracts;
 
 namespace PRServices.Services
 {
-    internal class GitHubPullRequestServices : IPullRequestServices
+    internal class GitHubPullRequestServices : IGitHubPullRequestService
     {
         private readonly GitHubClient client;
-        private readonly string repoName;
-        private readonly string owner;
 
-        public GitHubPullRequestServices(GitHubClient client, string owner, string repoName)
+        public GitHubPullRequestServices(string personalAccessToken)
         {
+            Credentials credentials = new Credentials(personalAccessToken);
+
+            GitHubClient client = new GitHubClient(new ProductHeaderValue("PRTracker"))
+            {
+                Credentials = credentials
+            };
+
             this.client = client;
-            this.owner = owner;
-            this.repoName = repoName;
         }
 
         public async Task<Stream> DownloadAvatarAsync(string url)
@@ -33,65 +36,78 @@ namespace PRServices.Services
             return new MemoryStream((byte[])response.HttpResponse.Body);
         }
 
-        public async Task<IEnumerable<IPullRequest>> GetPullRequestsAsync(PullRequestState status, string userUniqueId = null)
+        public async Task<IEnumerable<IPullRequest>> GetPullRequestsAsync(GitHubQuery query)
         {
-            PullRequestRequest request = new PullRequestRequest { State = GitHubPullRequestServices.ConvertToGitHubStateFilter(status) };
+            SearchIssuesRequest search = new SearchIssuesRequest
+            {
+                Assignee = query.AssginedTo,
+                Author = query.CreatedBy,
+                Base = query.Base,
+                Head = query.Head,
+                Involves = query.InvolvedUser,
+                Type = IssueTypeQualifier.PullRequest
+            };
 
-            IReadOnlyList<PullRequest> pullRequests = await this.client.PullRequest.GetAllForRepository(this.owner, this.repoName, request);
+            if (query.Status != PullRequestState.All)
+            {
+                search.State = query.Status == PullRequestState.Open ? ItemState.Open : ItemState.Closed;
+            }
+
+            SearchIssuesResult searchResult = await this.client.Search.SearchIssues(search);
 
             List<IPullRequest> trackerPullRequests = new List<IPullRequest>();
 
-            foreach (PullRequest pullRequest in pullRequests)
+            foreach (Issue issue in searchResult.Items)
             {
-                IReadOnlyList<PullRequestReview> reviews = await this.client.PullRequest.Review.GetAll(this.owner, this.repoName, pullRequest.Number);
+                PullRequest pullRequest = issue.PullRequest;
+                IEnumerable<IUserWithVote> reviewers = null;
 
-                // Want to exclude anything that the user has approved
-                if (!string.IsNullOrEmpty(userUniqueId) && reviews.Any(review => review.User.Login == userUniqueId && review.State.Value == PullRequestReviewState.Approved))
+                if (issue.State != ItemState.Closed)
                 {
-                    continue;
+                    IReadOnlyList<PullRequestReview> reviews = await this.client.PullRequest.Review.GetAll(issue.Repository.Id, pullRequest.Number);
+
+                    // Want to exclude anything that the user has approved
+                    if (!string.IsNullOrEmpty(query.UniqueUserId) && reviews.Any(review => review.User.Login == query.UniqueUserId && review.State.Value == PullRequestReviewState.Approved))
+                    {
+                        continue;
+                    }
+
+                    reviewers = reviews.Select(review => new Models.UserWithVote(review.User.AvatarUrl, review.User.Login, GitHubPullRequestServices.ConvertToTrackerVote(review.State)));
                 }
 
-                DateTime changeStateDate = pullRequest.State.Value == ItemState.Closed ? pullRequest.ClosedAt.Value.DateTime : pullRequest.UpdatedAt.DateTime;
-                Models.User createdBy = new Models.User(pullRequest.User.AvatarUrl, pullRequest.User.Login);
-                IEnumerable<IUserWithVote> reviewers = reviews.Select(review => new Models.UserWithVote(review.User.AvatarUrl, review.User.Login, GitHubPullRequestServices.ConvertToTrackerVote(review.State)));
+                DateTime changeStateDate;
+                if (issue.State == ItemState.Closed && issue.ClosedAt.HasValue)
+                {
+                    changeStateDate = issue.ClosedAt.Value.DateTime;
+                }
+                else if (issue.UpdatedAt.HasValue)
+                {
+                    changeStateDate = issue.UpdatedAt.Value.DateTime;
+                }
+                else
+                {
+                    changeStateDate = issue.CreatedAt.DateTime;
+                }
+
+                Models.User createdBy = new Models.User(issue.User.AvatarUrl, issue.User.Login);
 
                 Models.PullRequest trackerPullRequest = new Models.PullRequest(
                     null,
-                    pullRequest.Base.Ref,
+                    pullRequest.Base?.Ref,
                     changeStateDate,
                     createdBy,
                     pullRequest.Number,
-                    this.owner,
-                    this.repoName,
+                    issue.User.Name,
+                    issue.Repository?.Name,
                     reviewers,
-                    pullRequest.State.Value == ItemState.Open ? PullRequestState.Open : PullRequestState.Closed,
-                    pullRequest.Title,
-                    pullRequest.Url);
+                    issue.State.Value == ItemState.Open ? PullRequestState.Open : PullRequestState.Closed,
+                    issue.Title,
+                    issue.HtmlUrl);
 
                 trackerPullRequests.Add(trackerPullRequest);
             }
 
             return trackerPullRequests;
-        }
-
-        private static ItemStateFilter ConvertToGitHubStateFilter(PullRequestState status)
-        {
-            ItemStateFilter filter = ItemStateFilter.All;
-
-            switch (status)
-            {
-                case PullRequestState.All:
-                    filter = ItemStateFilter.All;
-                    break;
-                case PullRequestState.Closed:
-                    filter = ItemStateFilter.Closed;
-                    break;
-                case PullRequestState.Open:
-                    filter = ItemStateFilter.Open;
-                    break;
-            }
-
-            return filter;
         }
 
         private static PullRequestVote ConvertToTrackerVote(StringEnum<PullRequestReviewState> state)

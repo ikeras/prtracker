@@ -5,10 +5,10 @@ using PRServices.Contracts;
 
 namespace PRServices.Services
 {
-    public interface IPullRequestServices
+    public interface IAzureDevOpsPullRequestService
     {
         Task<Stream> DownloadAvatarAsync(string url);
 
-        Task<IEnumerable<IPullRequest>> GetPullRequestsAsync(PullRequestState status, string userUniqueId = null);
+        Task<IEnumerable<IPullRequest>> GetPullRequestsAsync(AzureDevOpsQuery query);
     }
 }
