@@ -62,7 +62,7 @@ namespace PRServices.Services
                 PullRequest pullRequest = issue.PullRequest;
                 IEnumerable<IUserWithVote> reviewers = null;
 
-                if (issue.State != ItemState.Closed)
+                if (issue.State != ItemState.Closed && issue.Repository != null)
                 {
                     IReadOnlyList<PullRequestReview> reviews = await this.client.PullRequest.Review.GetAll(issue.Repository.Id, pullRequest.Number);
 
