@@ -35,7 +35,6 @@ namespace PRTracker.Models
                     Task.Run(async () =>
                     {
                         BitmapImage avatarImage = await this.avatarDownloadAsyncCache[imageUrl];
-                        avatarImage.Freeze();
 
                         // It's fine if this returns false because the key already exists, as we'll just send a property change notification to read reload the value from the cache
                         this.avatarCache.TryAdd(imageUrl, avatarImage);

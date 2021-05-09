@@ -36,7 +36,7 @@ namespace PRTracker.Models
 
         public string ReviewTool { get; }
 
-        public IEnumerable<TrackerIdentityWithVote> Reviewers { get => this.gitPullRequest.Reviewers.Select((reviewer) => new TrackerIdentityWithVote(reviewer, this.avatarDownloadAsyncCache, this.avatarCache)); }
+        public IEnumerable<TrackerIdentityWithVote> Reviewers { get => this.gitPullRequest.Reviewers?.Select((reviewer) => new TrackerIdentityWithVote(reviewer, this.avatarDownloadAsyncCache, this.avatarCache)); }
 
         public string Status
         {
@@ -65,7 +65,7 @@ namespace PRTracker.Models
                 const string refsPrefix = "refs/heads/";
 
                 string target = this.gitPullRequest.BaseRef;
-                if (target.StartsWith(refsPrefix, StringComparison.OrdinalIgnoreCase))
+                if (target != null && target.StartsWith(refsPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     target = target.Remove(0, refsPrefix.Length);
                 }

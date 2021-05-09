@@ -113,6 +113,7 @@ namespace PRTracker.ViewModels
 
                         avatarImage.StreamSource = memoryStream;
                         avatarImage.EndInit();
+                        avatarImage.Freeze();
 
                         return avatarImage;
                     }

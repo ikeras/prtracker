@@ -19,21 +19,7 @@ namespace PRTracker.Models
 
         public int GetHashCode(TrackerPullRequest obj)
         {
-            unchecked
-            {
-                int hash = 17;
-
-                hash = (hash * 23) + obj.ID.GetHashCode();
-                hash = (hash * 23) + obj.ProjectOrOwner.GetHashCode();
-                hash = (hash * 23) + obj.RepoName.GetHashCode();
-
-                if (obj.AccountName != null)
-                {
-                    hash = (hash * 23) + obj.AccountName.GetHashCode();
-                }
-
-                return hash;
-            }
+            return obj.Url.GetHashCode();
         }
     }
 }
