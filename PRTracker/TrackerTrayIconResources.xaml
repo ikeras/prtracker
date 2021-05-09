@@ -98,7 +98,7 @@
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
-                                        <TextBlock Grid.Row="1">
+                                        <TextBlock Grid.Row="1" HorizontalAlignment="Right">
                                             <Run Text="{Binding Status, Mode=OneWay}" /> <Run Text="{Binding FormattedDate, Mode=OneWay}" />
                                         </TextBlock>
                                     </Grid>
