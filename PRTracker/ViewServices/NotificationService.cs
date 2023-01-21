@@ -1,4 +1,5 @@
-﻿using Hardcodet.Wpf.TaskbarNotification;
+﻿using H.NotifyIcon;
+using H.NotifyIcon.Core;
 
 namespace PRTracker.ViewServices
 {
@@ -13,16 +14,19 @@ namespace PRTracker.ViewServices
 
         public void ShowNotification(string title, string message, NotificationType notificationType)
         {
-            BalloonIcon balloonIcon = notificationType switch
+            NotificationIcon notificationIcon = notificationType switch
             {
-                NotificationType.None => BalloonIcon.None,
-                NotificationType.Info => BalloonIcon.Info,
-                NotificationType.Warning => BalloonIcon.Warning,
-                NotificationType.Error => BalloonIcon.Error,
-                _ => BalloonIcon.None,
+                NotificationType.None => NotificationIcon.None,
+                NotificationType.Info => NotificationIcon.Info,
+                NotificationType.Warning => NotificationIcon.Warning,
+                NotificationType.Error => NotificationIcon.Error,
+                _ => NotificationIcon.None,
             };
 
-            this.taskBarIcon.ShowBalloonTip(title, message, balloonIcon);
+            if (this.taskBarIcon.IsCreated)
+            {
+                this.taskBarIcon.ShowNotification(title, message, notificationIcon);
+            }
         }
     }
 }

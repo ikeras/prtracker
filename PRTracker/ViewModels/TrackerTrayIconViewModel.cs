@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Command;
-using GalaSoft.MvvmLight.Ioc;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using PRServices.Contracts;
 using PRServices.Services;
 using PRTracker.Common;
@@ -21,7 +21,7 @@ using PRTracker.ViewServices;
 
 namespace PRTracker.ViewModels
 {
-    public class TrackerTrayIconViewModel : ViewModelBase
+    public class TrackerTrayIconViewModel : ObservableObject
     {
         private TrackerConfig config;
         private string iconSource;
@@ -45,13 +45,13 @@ namespace PRTracker.ViewModels
         public string IconSource
         {
             get => this.iconSource;
-            set => this.Set(nameof(this.IconSource), ref this.iconSource, value);
+            set => this.SetProperty(ref this.iconSource, value);
         }
 
         public bool IsUpdating
         {
             get => this.loadEnabled;
-            set => this.Set(nameof(this.IsUpdating), ref this.loadEnabled, value);
+            set => this.SetProperty(ref this.loadEnabled, value);
         }
 
         public RelayCommand LaunchReviewToolCommand { get; }
@@ -59,31 +59,18 @@ namespace PRTracker.ViewModels
         public ObservableCollection<TrackerPullRequest> PullRequests
         {
             get => this.pullRequests;
-            set => this.Set(nameof(this.PullRequests), ref this.pullRequests, value);
+            set => this.SetProperty(ref this.pullRequests, value);
         }
 
         public TrackerPullRequest SelectedPullRequest
         {
             get => this.selectedPullRequest;
-            set => this.Set(nameof(this.SelectedPullRequest), ref this.selectedPullRequest, value);
+            set => this.SetProperty(ref this.selectedPullRequest, value);
         }
 
-        private INotificationService NotificationService { get => SimpleIoc.Default.GetInstance<INotificationService>(); }
+        private static INotificationService NotificationService { get => App.Current.Services.GetService<INotificationService>(); }
 
-        private void OnLaunchReviewTool()
-        {
-            // Handle errors
-            TrackerPullRequest pullRequest = this.SelectedPullRequest;
-
-            if (pullRequest != null)
-            {
-                TrackerReviewTool reviewTool = this.config.ReviewTools.FirstOrDefault((tool) => pullRequest.ReviewTool == tool.Name);
-
-                reviewTool.Launch(pullRequest.AccountName, pullRequest.ProjectOrOwner, pullRequest.RepoName, pullRequest.ID, pullRequest.Url);
-            }
-        }
-
-        private Func<string, Task<BitmapImage>> GetDownloadAvatarImageAsync(Func<string, Task<Stream>> downloadAvatarAsync)
+        private static Func<string, Task<BitmapImage>> GetDownloadAvatarImageAsync(Func<string, Task<Stream>> downloadAvatarAsync)
         {
             return async url =>
             {
@@ -93,9 +80,9 @@ namespace PRTracker.ViewModels
 
                     if (avatarStream != null)
                     {
-                        BinaryReader reader = new BinaryReader(avatarStream);
-                        MemoryStream memoryStream = new MemoryStream();
-                        BitmapImage avatarImage = new BitmapImage();
+                        BinaryReader reader = new(avatarStream);
+                        MemoryStream memoryStream = new();
+                        BitmapImage avatarImage = new();
 
                         const int BytesToRead = 8192;
 
@@ -127,7 +114,7 @@ namespace PRTracker.ViewModels
             };
         }
 
-        private async Task<TrackerConfig> LoadConfig()
+        private static async Task<TrackerConfig> LoadConfig()
         {
             return await Task.Run(() =>
             {
@@ -136,11 +123,24 @@ namespace PRTracker.ViewModels
                     AddJsonFile("config.json").
                     Build();
 
-                TrackerConfig trackerConfig = new TrackerConfig();
+                TrackerConfig trackerConfig = new();
                 configuration.Bind(trackerConfig);
 
                 return trackerConfig;
             });
+        }
+
+        private void OnLaunchReviewTool()
+        {
+            // Handle errors
+            TrackerPullRequest pullRequest = this.SelectedPullRequest;
+
+            if (pullRequest != null)
+            {
+                TrackerReviewTool reviewTool = this.config.ReviewTools.FirstOrDefault((tool) => pullRequest.ReviewTool == tool.Name);
+
+                reviewTool.Launch(pullRequest.AccountName, pullRequest.ProjectOrOwner, pullRequest.RepoName, pullRequest.ID, pullRequest.Url);
+            }
         }
 
         private void LoadConfigAndStartRefreshTimer()
@@ -149,7 +149,7 @@ namespace PRTracker.ViewModels
 
             Task.Run(async () =>
             {
-                this.config = await this.LoadConfig();
+                this.config = await LoadConfig();
 
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
@@ -171,10 +171,10 @@ namespace PRTracker.ViewModels
 
             Task.Run(async () =>
             {
-                IConnectionService connectionService = SimpleIoc.Default.GetInstance<IConnectionService>();
-                List<TrackerPullRequest> trackerPullRequests = new List<TrackerPullRequest>();
+                IConnectionService connectionService = App.Current.Services.GetService<IConnectionService>();
+                List<TrackerPullRequest> trackerPullRequests = new();
 
-                ConcurrentDictionary<string, BitmapImage> avatarCache = new ConcurrentDictionary<string, BitmapImage>();
+                ConcurrentDictionary<string, BitmapImage> avatarCache = new();
 
                 foreach (TrackerAzureDevOpsQuery query in this.config.AzureDevOps.Queries)
                 {
@@ -183,9 +183,9 @@ namespace PRTracker.ViewModels
                         query.Project,
                         query.AccountName);
 
-                    AzureDevOpsQuery adoQuery = new AzureDevOpsQuery
+                    AzureDevOpsQuery adoQuery = new()
                     {
-                        IsAssignedToMe = query.FilterToTeams != null ? true : query.IsAssignedToMe,
+                        IsAssignedToMe = query.FilterToTeams != null || query.IsAssignedToMe,
                         IsCreatedByMe = query.IsCreatedByMe,
                         FilterToTeams = query.FilterToTeams,
                         RepoName = query.RepoName,
@@ -197,7 +197,7 @@ namespace PRTracker.ViewModels
                     };
 
                     IEnumerable<IPullRequest> prs = await adoPRService.GetPullRequestsAsync(adoQuery);
-                    AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(adoPRService.DownloadAvatarAsync));
+                    AsyncCache<string, BitmapImage> asyncCache = new(GetDownloadAvatarImageAsync(adoPRService.DownloadAvatarAsync));
 
                     foreach (IPullRequest pullRequest in prs)
                     {
@@ -209,7 +209,7 @@ namespace PRTracker.ViewModels
                 {
                     IGitHubPullRequestService gitHubPRService = connectionService.InitializeGitHubPRServicesAsync(query.PersonalAccessToken);
 
-                    GitHubQuery gitHubQuery = new GitHubQuery
+                    GitHubQuery gitHubQuery = new()
                     {
                         AssginedTo = query.AssginedTo,
                         Base = query.Base,
@@ -221,7 +221,7 @@ namespace PRTracker.ViewModels
                     };
 
                     IEnumerable<IPullRequest> prs = await gitHubPRService.GetPullRequestsAsync(gitHubQuery);
-                    AsyncCache<string, BitmapImage> asyncCache = new AsyncCache<string, BitmapImage>(this.GetDownloadAvatarImageAsync(gitHubPRService.DownloadAvatarAsync));
+                    AsyncCache<string, BitmapImage> asyncCache = new(GetDownloadAvatarImageAsync(gitHubPRService.DownloadAvatarAsync));
 
                     foreach (IPullRequest pullRequest in prs)
                     {
@@ -238,7 +238,7 @@ namespace PRTracker.ViewModels
                     this.IsUpdating = false;
                     if (showNotification)
                     {
-                        this.NotificationService.ShowNotification("PRTracker", "New PRs to review", NotificationType.Info);
+                        NotificationService.ShowNotification("PRTracker", "New PRs to review", NotificationType.Info);
                     }
                 });
             });

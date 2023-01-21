@@ -1,5 +1,4 @@
-﻿using GalaSoft.MvvmLight.Ioc;
-using PRServices.Services;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace PRTracker.ViewModels
 {
@@ -9,16 +8,7 @@ namespace PRTracker.ViewModels
     /// </summary>
     public class ViewModelLocator
     {
-        public ViewModelLocator()
-        {
-            SimpleIoc.Default.Register<IConnectionService, ConnectionService>();
-            SimpleIoc.Default.Register<TrackerTrayIconViewModel>();
-        }
-
-        public TrackerTrayIconViewModel TrackerTrayIcon
-        {
-            get => SimpleIoc.Default.GetInstance<TrackerTrayIconViewModel>();
-        }
+        public static TrackerTrayIconViewModel TrackerTrayIcon => App.Current.Services.GetService<TrackerTrayIconViewModel>();
 
         public static void Cleanup()
         {

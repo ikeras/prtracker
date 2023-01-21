@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using GalaSoft.MvvmLight;
+using CommunityToolkit.Mvvm.ComponentModel;
 using PRServices.Contracts;
 using PRTracker.Common;
 
@@ -38,7 +38,7 @@ namespace PRTracker.Models
 
                         // It's fine if this returns false because the key already exists, as we'll just send a property change notification to read reload the value from the cache
                         this.avatarCache.TryAdd(imageUrl, avatarImage);
-                        this.RaisePropertyChanged();
+                        this.OnPropertyChanged();
                     });
 
                     return null;
